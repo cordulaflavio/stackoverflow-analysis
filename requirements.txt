@@ -1,0 +1,11 @@
+# Python dependencies
+# -------------------
+# Direct dependencies only; avoid `pip freeze`, which pulls in transitive,
+# platform-specific packages and hurts reproducibility.
+#
+# dbt-core is pinned together with the adapter so it cannot float ahead of it.
+# The series is dictated by the adapter: when upgrading, bump both together and
+# keep the core ceiling at the adapter's next series.
+
+dbt-core>=1.12,<1.13
+dbt-bigquery==1.12.1

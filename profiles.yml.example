@@ -1,0 +1,31 @@
+# Example dbt profile for this project. It contains NO secrets.
+#
+# dbt ignores this file by name. To use it:
+#   1. Copy the `stackoverflow_analysis:` block below into ~/.dbt/profiles.yml
+#      (create the file if it does not exist).
+#   2. Set two environment variables (dbt does not read .env files):
+#        DBT_KEYFILE     path to a GCP service account key, kept outside the repo
+#        GCP_PROJECT_ID  the GCP project that runs the queries and holds the output datasets
+#      cmd:         set DBT_KEYFILE=C:\path\to\key.json
+#      PowerShell:  $env:DBT_KEYFILE = "C:\path\to\key.json"
+#      bash:        export DBT_KEYFILE="$HOME/path/to/key.json"
+#   3. Check the connection:  dbt debug
+#
+# The service account needs BigQuery Job User and BigQuery Data Editor on that project.
+# Reading the source (bigquery-public-data.stackoverflow) needs no extra role.
+
+stackoverflow_analysis:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      keyfile: "{{ env_var('DBT_KEYFILE') }}"
+      project: "{{ env_var('GCP_PROJECT_ID') }}"
+      dataset: dbt_dev
+      # Must match the source dataset's location.
+      location: US
+      threads: 4
+      # Any single query that would scan more than 50 GB fails before running,
+      # protecting the 1 TB/month free query quota.
+      maximum_bytes_billed: 50000000000

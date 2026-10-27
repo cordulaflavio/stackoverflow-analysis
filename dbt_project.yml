@@ -1,0 +1,35 @@
+name: 'stackoverflow_analysis'
+version: '1.0.0'
+
+profile: 'stackoverflow_analysis'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Deprecated test syntax fails instead of warning
+# -----------------------------------------------
+# Since dbt 1.10, generic test parameters (values, to, field...) go under
+# `arguments:`. The old form still runs with a warning that is easy to miss in
+# the log; as an error it breaks the parse locally and in CI.
+flags:
+  warn_error_options:
+    error:
+      - MissingArgumentsPropertyInGenericTestDeprecation
+
+models:
+  stackoverflow_analysis:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
