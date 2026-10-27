@@ -1,0 +1,31 @@
+# Private notes and the challenge statement (local only)
+_private/
+CLAUDE.local.md
+# Draft: un-ignore once the conventions are stable
+CLAUDE.md
+
+# Secrets / credentials
+# The real dbt profile stays local (see profiles.yml.example)
+profiles.yml
+.env
+*.env
+*-key.json
+service-account*.json
+credentials*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
