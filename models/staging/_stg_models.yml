@@ -1,0 +1,129 @@
+version: 2
+
+models:
+  - name: stg_questions
+    description: >
+      One row per question, without `body`. Score, views, comments and favorites are cumulative
+      at the snapshot date (observed after posting).
+    columns:
+      - name: question_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: title
+        description: Latest version of the title (titles can be edited after posting).
+      - name: tags
+        description: >
+          Current tags as a '|'-separated string (e.g. 'python|pandas'). 1 to 5 tags, 6 for 119
+          legacy questions. Tags can be edited after posting.
+      - name: created_at
+        description: Question creation timestamp (UTC).
+        data_tests:
+          - not_null
+      - name: owner_user_id
+        description: Asker; null for 2.0% of questions whose owner deleted their account.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+              config:
+                # Expected: 5 rows. Owner ids that point to no user, likely accounts removed
+                # between the exports of posts and users. Ownerless questions (null, 2.0%) are
+                # not counted: relationships tests ignore nulls. Too few to affect any rate.
+                severity: warn
+      - name: accepted_answer_id
+        description: Current accepted answer, if any. Only the asker can accept, one answer per question.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_answers')
+                field: answer_id
+              config:
+                # Expected: 230 rows. Accepted answers absent from posts_answers, most likely
+                # deleted after being accepted. Not caught here: 62 accepted answers that belong
+                # to another question and 40 created before their question (see data_quality.md).
+                # 332 of 11.8M accepted answers in total: negligible for the rates.
+                severity: warn
+      - name: answer_count
+        description: Number of answers; matches the rows in posts_answers for every question.
+      - name: score
+        description: Upvotes minus downvotes at the snapshot date.
+      - name: view_count
+        description: Cumulative views at the snapshot date.
+      - name: comment_count
+        description: Comments on the question at the snapshot date.
+      - name: favorite_count
+        description: Null for 78% of questions; null most likely means zero.
+      - name: last_edited_at
+        description: Last edit timestamp (UTC); null if never edited.
+
+  - name: stg_answers
+    description: One row per answer, without `body`.
+    columns:
+      - name: answer_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: question_id
+        description: Question being answered (`parent_id` in the source).
+        data_tests:
+          - not_null
+          # Profiling found no orphan answers, so this one fails if any appear.
+          - relationships:
+              arguments:
+                to: ref('stg_questions')
+                field: question_id
+      - name: owner_user_id
+        description: Answer author; null if the account was deleted.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+              config:
+                # Expected: 1 row, measured by the first dbt build (not covered by profiling).
+                # Same cause as the question owners above. Null owners are not counted.
+                severity: warn
+      - name: created_at
+        description: Answer creation timestamp (UTC).
+        data_tests:
+          - not_null
+      - name: score
+        description: Upvotes minus downvotes at the snapshot date.
+
+  - name: stg_users
+    description: One row per user account, with values as of the snapshot date.
+    columns:
+      - name: user_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: reputation
+        description: Reputation at the snapshot date, not at the time of any given post.
+      - name: created_at
+        description: Account creation timestamp (UTC).
+
+  - name: stg_question_body_features
+    description: >
+      Features derived from the question `body`, which is read only here. Storing a few numeric
+      features instead of the text cuts 36 GB of `body` down to under 1 GB (estimated at about
+      0.9 GB; to be confirmed after the first build), so downstream models never read the text
+      again. `body` is the latest version of the post, possibly improved after answers or comments.
+    columns:
+      - name: question_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: body_length
+        description: Characters of visible text, HTML tags removed.
+      - name: code_block_count
+        description: Number of code blocks (<pre>); inline code is not counted.
+      - name: link_count
+        description: Number of links (<a>).
+      - name: image_count
+        description: Number of images (<img>).

@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: stackoverflow
+    description: >
+      Public Stack Overflow dump, read in place (there is no ingestion). It is a static snapshot:
+      posts end on 2022-09-25 and the data never changes, so there is no freshness check. The
+      singular test assert_source_snapshot_unchanged fails instead if the dataset is ever refreshed.
+    database: bigquery-public-data
+    schema: stackoverflow
+    tables:
+      - name: posts_questions
+        description: >
+          One row per question. `body` is 36 of the table's 40 GB and is read only by
+          stg_question_body_features.
+      - name: posts_answers
+        description: One row per answer; `parent_id` is the id of the question it answers.
+      - name: users
+        description: One row per user account, with values as of the snapshot date.
