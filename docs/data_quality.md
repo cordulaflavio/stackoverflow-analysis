@@ -1,8 +1,8 @@
 # Data quality assessment
 
 Profiling of `bigquery-public-data.stackoverflow` done before any modeling.
-Every number below comes from a query in [`queries/profiling/`](../queries/profiling/);
-each one runs as-is in the BigQuery console. Profiling scanned about 10 GB in total.
+Every number below comes from a query in [`queries/profiling/`](../queries/profiling/)
+or, where noted, from a dbt test; each profiling query runs as-is in the BigQuery console. Profiling scanned about 10 GB in total.
 
 ## Summary
 
@@ -82,10 +82,13 @@ questions are survivors. Rates computed across that boundary are biased in favou
 | Accepted answer created before its question | 40 |
 | Answers created before their question | 507 |
 | Questions without owner (deleted account) | 457,862 (2.0%) |
-| Owner id not found in `users` | 5 |
+| Owner id not found in `users` (questions) | 5 |
+| Owner id not found in `users` (answers) | 1 ¹ |
 | Owner account created after the question | 32,321 |
 | Nulls in `answer_count`, `score`, `view_count`, `comment_count`, `tags` | 0 |
 | Null `favorite_count` | 78% (null most likely means zero) |
+
+¹ Measured by the dbt `relationships` test on `stg_answers.owner_user_id`, not by a profiling query.
 
 **A hypothesis that did not hold.** Only the asker can accept an answer, so questions whose owner deleted
 their account were expected to show a lower accepted-answer rate. They show a *higher* one
