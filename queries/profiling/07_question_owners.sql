@@ -1,6 +1,8 @@
 -- Can question owners be found in users?
--- A question without an owner (deleted account) cannot get an accepted answer, since only
--- the asker can accept; that biases the accepted-answer rate if left in.
+-- Hypothesis tested here: only the asker can accept an answer, so questions without an owner
+-- (deleted account) should show a lower accepted-answer rate. The data refuted it: they show a
+-- higher one, since acceptances made before the account was deleted are kept (see
+-- docs/data_quality.md).
 with questions as (
     select
         owner_user_id,
