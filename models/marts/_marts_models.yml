@@ -1,0 +1,96 @@
+version: 2
+
+models:
+  - name: fct_questions
+    description: >
+      One row per question, the single source of truth for the three analyses. A single wide
+      table on purpose: the scope is three analytical questions, BigQuery is columnar, and the
+      user attributes that matter must be measured at posting time, so they belong to the
+      question grain. Stores neutral facts only; analytical choices live in the report models.
+      Clustered by creation_year (not partitioned: sandbox partitions expire after 60 days).
+    columns:
+      - name: question_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: Question creation timestamp (UTC).
+      - name: creation_year
+        description: Year of created_at (UTC).
+        data_tests:
+          - not_null
+      - name: created_hour_utc
+        description: Hour of created_at in UTC, not the asker's local time.
+      - name: created_weekday
+        description: Day of week of created_at in UTC, 1 = Sunday to 7 = Saturday.
+      - name: tags
+        description: Current tags as an array, for per-tag analysis with unnest().
+      - name: tag_combination
+        description: Current tags as the original '|'-separated string; one value per combination.
+        data_tests:
+          - not_null
+      - name: tag_count
+        description: Number of tags (1 to 5; 6 for 119 legacy questions).
+      - name: title_length
+        description: Characters in the latest title.
+      - name: title_has_question_mark
+        description: True if the latest title contains a question mark.
+      - name: body_length
+        description: Characters of visible body text, HTML removed (latest version).
+      - name: code_block_count
+        description: Code blocks (<pre>) in the latest body.
+      - name: link_count
+        description: Links (<a>) in the latest body.
+      - name: image_count
+        description: Images (<img>) in the latest body.
+      - name: has_error_report
+        description: The asker reports an error outside code blocks (see stg_question_body_features).
+      - name: owner_user_id
+        description: Asker; null when the account was deleted.
+      - name: has_owner
+        description: False for the 2.0% of questions whose owner deleted their account.
+      - name: asker_account_age_days
+        description: >
+          Days between the asker's account creation and the question, known at posting time.
+          Null without owner, or when the account appears to be created after the question.
+      - name: asker_reputation
+        description: Asker reputation at the snapshot date, including what was earned afterwards.
+      - name: answer_count
+        description: Answers at the snapshot date.
+      - name: is_answered
+        description: At least one answer at the snapshot date (no time window).
+      - name: first_answer_at
+        description: Creation timestamp of the earliest answer.
+      - name: hours_to_first_answer
+        description: Hours from the question to its first answer.
+      - name: is_answered_within_30d
+        description: First answer posted within 30 days of the question.
+      - name: has_accepted_answer
+        description: >
+          A valid accepted answer: it exists, answers this question and was posted after it.
+          Includes self-accepted answers (see is_self_accepted).
+      - name: has_invalid_accepted_answer
+        description: accepted_answer_id is set but fails the validity checks (332 in profiling).
+      - name: accepted_answer_created_at
+        description: Creation timestamp of the valid accepted answer.
+      - name: is_self_accepted
+        description: The valid accepted answer was written by the asker.
+      - name: is_accepted_within_30d
+        description: >
+          The valid accepted answer was posted within 30 days of the question. The dump has no
+          acceptance date, so the answer date is a proxy (acceptance can only come later).
+      - name: has_full_30d_window
+        description: >
+          The dump covers the full 30 days after the question. False for questions posted in
+          the last 30 days of the snapshot (right-censoring).
+      - name: score
+        description: Snapshot score, observed after posting.
+      - name: view_count
+        description: Snapshot views, observed after posting.
+      - name: comment_count
+        description: Snapshot comments, observed after posting.
+      - name: favorite_count
+        description: Snapshot favorites; null for 78% of questions (most likely zero).
+      - name: is_edited
+        description: The question was edited at least once; its title, tags and body may differ from the original.
