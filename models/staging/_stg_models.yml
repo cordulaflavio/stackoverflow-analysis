@@ -110,9 +110,8 @@ models:
   - name: stg_question_body_features
     description: >
       Features derived from the question `body`, which is read only here. Storing a few numeric
-      features instead of the text cuts 36 GB of `body` down to under 1 GB (estimated at about
-      0.9 GB; to be confirmed after the first build), so downstream models never read the text
-      again. `body` is the latest version of the post, possibly improved after answers or comments.
+      features instead of the text cuts 36 GB of `body` down to 0.94 GB (measured after the first
+      build), so downstream models never read the text again. `body` is the latest version of the post, possibly improved after answers or comments.
     columns:
       - name: question_id
         description: Primary key.
@@ -127,3 +126,8 @@ models:
         description: Number of links (<a>).
       - name: image_count
         description: Number of images (<img>).
+      - name: has_error_report
+        description: >
+          True if "error", "exception" or "traceback" starts a word outside code blocks, i.e. the
+          asker reports an error in their own words. Misses errors pasted only inside code blocks
+          (precision preferred over coverage).
