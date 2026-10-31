@@ -454,5 +454,26 @@ technologies that few people master together.
     `models/marts/fct_questions.sql`;
   - column definitions in `models/reports/_reports_models.yml`.
 - **Exports.** `results/q1_tags.csv` and `results/q1_tag_combinations.csv`.
-- **Derived figures.** The Wilson intervals, the comparison with the remainder of the population
-  and the threshold sensitivity are computed from these exports.
+- **Statistics recomputed from the exports.** Three scripts in `scripts/q1/` read only these two
+  CSVs; they run no query and need no dbt. Run them from the repository root with Python 3.10+
+  (standard library only):
+
+  | Script | What it does | Run |
+  |---|---|---|
+  | `compare_with_rest.py` | Reproduces the comparison with the rest of the population: z-test per combination, Holm correction, 99 above / 11 below / 64 not distinguishable. Reads `q1_tag_combinations.csv` | `python scripts/q1/compare_with_rest.py results/q1_tag_combinations.csv` |
+  | `derived_statistics.py` | Reproduces the derived figures: Wilson half-widths, the top/bottom separation and overlaps, the Spearman correlations (average ranks) and the Pearson correlation of the two steps, the 1,000 / 2,000 thresholds, rank moves with self-acceptance, combination coverage, the 200 vs 500 table and the 500+ lists. Prints labelled values to compare with the report; it is not a pass/fail check. Reads both CSVs | `python scripts/q1/derived_statistics.py` |
+  | `check_doc.py` | Checks consistency, not statistics: every table row of this report whose first cell is a tag or a combination is compared with the CSVs (questions, percentages, Wilson intervals, counts, answers per question). Reads both CSVs and this file | `python scripts/q1/check_doc.py` |
+
+- **What the scripts do not cover.** The 2022 baseline, the population counts (1,121,356
+  questions, 988,059 with 2+ tags, 583,276 distinct combinations), the threshold sweep and the
+  frequency-gradient tables come from the SQL in `queries/q1/`. Those queries read the project's
+  BigQuery tables, not the CSVs.
+- **Limitations of the scripts.**
+  - The CSVs hold rates rounded to 4 decimals, not the number of community-accepted questions,
+    so the scripts rebuild it as rate × questions. This is exact for combinations (at most 5,330
+    questions) and off by up to about 9 questions for the largest tag (python, 179,625
+    questions), far below the precision shown in the report.
+  - The 2+ tag population totals are written in the code, because no CSV holds them:
+    `compare_with_rest.py` uses 988,059 questions and 266,963 community-accepted ones;
+    `derived_statistics.py` uses the 988,059. Both come from
+    `queries/q1/06_combination_frequency_gradient.sql` (table A).
