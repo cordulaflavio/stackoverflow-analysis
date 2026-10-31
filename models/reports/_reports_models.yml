@@ -434,3 +434,121 @@ models:
           Type: change (percentage points).
           community_accepted_rate minus the previous year's, times 100. Null for 2013 and
           whenever either year has no questions.
+
+  - name: rpt_q3_post_qualities
+    description: |
+      **Q3.** "Other than tags, what qualities on a post correlate with the highest rate of answer
+      and approved answer?"
+
+      - **Grain:** one row per segment, creation year, attribute and bucket.
+      - **Population:** questions created from 2013 to 2022 with a complete 30-day observation
+        window. 2022 covers 2022-01-01 to ~2022-08-26 and is exactly the Q1 population.
+      - **Attributes:** known at posting time only. Snapshot values (score, views, comments,
+        favorites, edits, current reputation, has_owner) are left out.
+      - **Buckets:** fixed limits for every year, set on the 2013-2022 distribution
+        (queries/q3/01_attribute_distributions.sql), so years compare bucket by bucket. Each
+        attribute splits its segment and year into buckets without overlap.
+      - **Segments:** 'all' is the analysis. 'never_edited' (title and body as posted) and
+        'python_only' (exactly one tag, 'python', as in Q2) are robustness subsets of it, never
+        mixed into it. In python_only, tag_count is always 1 by definition.
+      - **never_edited is a selection that changes with age:** older questions had more time to be
+        edited, so the never-edited share shrinks in older years and the segment describes a
+        different mix of questions each year. It checks whether the text features hold on the
+        posted text; it does not represent the population.
+      - **Missing rows:** a bucket with no questions in a segment and year has no row. A missing
+        row means no observations, not a rate of zero. It can only happen in the small
+        python_only segment.
+      - **Observation window:** answers count only if posted within 30 days. A question counts as
+        accepted when its accepted answer was posted within 30 days; the dump has no acceptance
+        date, so the acceptance itself may have happened later, and older questions had more time
+        for it.
+      - **Survivorship:** Stack Overflow deleted some unanswered, low-score questions that met its
+        cleanup criteria (see stackoverflow_rules.md). Questions created before ~2021-09 had
+        passed the one-year rule; later ones had not. This can change both the rates and the gaps
+        between buckets across years; its size was not measured.
+      - **Associations only:** a bucket that goes with higher rates does not cause them.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - segment
+              - creation_year
+              - attribute
+              - bucket
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "creation_year between 2013 and 2022"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "total_questions > 0"
+      # Holds because a question accepted within 30 days was always answered within 30 days
+      # (queries/q1/05_accepted_within_answered.sql).
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answered_questions <= total_questions and community_accepted_questions <= answered_questions"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answered_question_rate between 0 and 1 and community_accepted_rate between 0 and 1"
+    columns:
+      - name: segment
+        description: >
+          'all' for the analysis; 'never_edited' and 'python_only' for the robustness checks. A
+          question appears in 'all' and in every other segment it belongs to.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['all', 'never_edited', 'python_only']
+      - name: creation_year
+        description: >
+          Year the questions were created (UTC), 2013 to 2022.
+        data_tests:
+          - not_null
+      - name: is_partial_year
+        description: >
+          True for 2022, which covers only January to ~2022-08-26.
+      - name: attribute
+        description: >
+          The post quality the row describes, as named in fct_questions.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['body_length', 'title_length', 'asker_account_age_days', 'code_block_count',
+                         'link_count', 'image_count', 'tag_count', 'created_hour_utc',
+                         'created_weekday', 'has_error_report', 'title_has_question_mark']
+      - name: bucket
+        description: >
+          The range or value of the attribute. Lengths are in characters, account age in days,
+          hours and days in UTC. 'unknown' account age is a data limitation (deleted account, or
+          an account that appears to be created after the question), not an asker profile.
+        data_tests:
+          - not_null
+      - name: bucket_order
+        description: >
+          Sort order of the buckets within an attribute, from the lowest range to the highest
+          ('unknown' last; Sunday first).
+        data_tests:
+          - not_null
+      - name: total_questions
+        description: >
+          Type: absolute count.
+          Questions in the segment, year and bucket. Denominator of both rates.
+      - name: answered_questions
+        description: >
+          Type: absolute count.
+          Questions with at least one answer within 30 days, the asker's own answers included,
+          as in Q1.
+      - name: community_accepted_questions
+        description: >
+          Type: absolute count.
+          Questions whose valid accepted answer, posted within 30 days, was written by someone
+          other than the asker.
+      - name: answered_question_rate
+        description: >
+          Type: rate (0 to 1).
+          answered_questions / total_questions.
+      - name: community_accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          community_accepted_questions / total_questions. The main acceptance metric, as in Q1.
