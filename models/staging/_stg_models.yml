@@ -16,7 +16,8 @@ models:
       - name: tags
         description: >
           Current tags as a '|'-separated string (e.g. 'python|pandas'). 1 to 5 tags, 6 for 119
-          legacy questions. Tags can be edited after posting.
+          legacy questions. Always lowercase (the site normalizes them; 0 exceptions in the full
+          dump). Tags can be edited after posting.
       - name: created_at
         description: Question creation timestamp (UTC).
         data_tests:

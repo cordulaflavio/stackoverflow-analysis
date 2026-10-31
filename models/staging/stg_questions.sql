@@ -5,6 +5,7 @@ with questions as (
         id as question_id,
         title,
         -- '|'-separated, exactly as in the source (e.g. 'python|pandas'); split downstream.
+        -- Already lowercase: the site normalizes tags, and the full dump has 0 exceptions, so no lower().
         tags,
         creation_date as created_at,
         owner_user_id,
