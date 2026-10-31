@@ -2,9 +2,16 @@
 -- It stores neutral facts only; analytical choices (the "current year", minimum volumes,
 -- whether self-accepted answers count) are applied in the report models.
 --
--- Clustered, not partitioned, on purpose: in BigQuery sandbox, partitions expire 60 days after
--- their partition date, so a table partitioned by question date (2008-2022) would lose its data.
-{{ config(cluster_by=['creation_year']) }}
+-- Clustered by creation_year, not partitioned. A filter on creation_year lets BigQuery skip the
+-- blocks of other years: the 2022 report rpt_q1_tags is billed about 0.07 GB.
+-- Partitioning does not pay off at this size. The table is 5.5 GB, about 0.4 GB per year on
+-- average, and BigQuery suggests clustering instead when partitions would hold less than
+-- approximately 10 GB. Partitioning by question date would also fail in the sandbox: partitions
+-- expire 60 days after their partition boundary, so every partition from 2008 to 2022 would
+-- expire immediately. Integer-range partitioning has no expiration, but no benefit here either.
+-- Sandbox storage is also capped at 10 GB: a rebuild would hold the old and the new table at
+-- once, so the old one is dropped first.
+{{ config(cluster_by=['creation_year'], pre_hook="drop table if exists {{ this }}") }}
 
 with questions as (
     select
@@ -23,12 +30,18 @@ with questions as (
     from {{ ref('stg_questions') }}
 ),
 
-first_answers as (
+answer_stats as (
     select
-        question_id,
-        min(created_at) as first_answer_at
-    from {{ ref('stg_answers') }}
-    group by question_id
+        answers.question_id,
+        min(answers.created_at) as first_answer_at,
+        -- Answers keep arriving until the snapshot, so answer_count favours older questions;
+        -- counting only the first 30 days gives every question the same window.
+        countif(answers.created_at < timestamp_add(questions.created_at, interval 30 day))
+            as answers_within_30d
+    from {{ ref('stg_answers') }} as answers
+    inner join questions
+        on answers.question_id = questions.question_id
+    group by answers.question_id
 ),
 
 accepted_answers as (
@@ -68,7 +81,8 @@ snapshot_end as (
 questions_enriched as (
     select
         questions.*,
-        first_answers.first_answer_at,
+        answer_stats.first_answer_at,
+        coalesce(answer_stats.answers_within_30d, 0) as answers_within_30d,
         askers.reputation as asker_reputation,
         askers.created_at as asker_created_at,
         -- An acceptance is valid only if the accepted answer exists, answers this question and
@@ -87,8 +101,8 @@ questions_enriched as (
         body_features.has_error_report
     from questions
     cross join snapshot_end
-    left join first_answers
-        on questions.question_id = first_answers.question_id
+    left join answer_stats
+        on questions.question_id = answer_stats.question_id
     left join accepted_answers
         on questions.accepted_answer_id = accepted_answers.answer_id
     left join askers
@@ -107,9 +121,14 @@ final as (
         -- 1 = Sunday ... 7 = Saturday
         extract(dayofweek from created_at) as created_weekday,
 
-        -- Tags: the array for per-tag analysis, the original string as the tag combination
+        -- Tags: the array keeps the source order and serves per-tag analysis. The combination
+        -- sorts the tags alphabetically: the source order is not alphabetical and the same set
+        -- of tags can appear in different orders, so 'python|pandas' and 'pandas|python' would
+        -- otherwise count as two different combinations.
         split(tags, '|') as tags,
-        tags as tag_combination,
+        array_to_string(
+            array(select tag from unnest(split(tags, '|')) as tag order by tag), '|'
+        ) as tag_combination,
         array_length(split(tags, '|')) as tag_count,
 
         -- Title (latest version)
@@ -138,6 +157,7 @@ final as (
         -- Answers
         answer_count,
         answer_count > 0 as is_answered,
+        answers_within_30d,
         first_answer_at,
         timestamp_diff(first_answer_at, created_at, minute) / 60 as hours_to_first_answer,
         coalesce(first_answer_at < timestamp_add(created_at, interval 30 day), false)
