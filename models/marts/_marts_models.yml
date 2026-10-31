@@ -76,6 +76,7 @@ models:
         description: >
           Answers posted within 30 days of the question. Unlike answer_count, it gives every
           question the same observation window (meaningful when has_full_30d_window is true).
+          Includes the 507 answers created before their question (see data_quality.md).
       - name: first_answer_at
         description: Creation timestamp of the earliest answer.
       - name: hours_to_first_answer

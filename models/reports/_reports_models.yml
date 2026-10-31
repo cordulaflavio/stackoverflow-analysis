@@ -313,3 +313,124 @@ models:
           is skipped. Used as a sensitivity comparison with
           rank_community_accepted to show how including self-accepted answers
           affects the relative ranking of combinations.
+
+  - name: rpt_q2_python_dbt_by_year
+    description: |
+      **Q2.** "For posts which are tagged with only 'python' or 'dbt', what is the year over year
+      change of question-to-answer ratio for the last 10 years? How about the rate of approved
+      answers on questions for the same time period? How do questions tagged with only 'python'
+      compare to questions tagged with only 'dbt'?"
+
+      - **Grain:** one row per tag (python, dbt) and creation year, 20 rows.
+      - **Population:** questions whose only tag is 'python' or 'dbt', created from 2013 to 2022.
+      - **Partial year:** 2022 covers 2022-01-01 to ~2022-08-26, the questions with a complete
+        30-day observation window before the dataset ends (last question on 2022-09-25).
+      - **Observation window:** only answers and acceptances from each question's first 30 days
+        are counted, so older questions have no advantage in answers. Acceptance only partly:
+        the dump has no acceptance date, so the accepted answer's posting date is used. An
+        answer posted within 30 days could still be accepted at any time up to the snapshot,
+        which gave a 2013 question years to accept it and a 2022 question a few months. This
+        can lower the acceptance rates of the latest years, 2022 most; the size is not measured.
+      - **Empty years:** every tag has a row for every year. dbt has no questions before 2020;
+        its counts are 0 and its rates are null in those years, never 0%.
+      - **Survivorship:** questions created after ~2021-09 had not yet passed Stack Overflow's
+        one-year deletion of unanswered questions, so the 2021 and 2022 rates are comparable
+        with older years only with that caveat.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - tag
+              - creation_year
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "creation_year between 2013 and 2022"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answered_questions <= total_questions and accepted_questions <= total_questions"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "community_accepted_questions <= accepted_questions"
+      # Rates exist exactly when the year has questions.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(total_questions = 0) = (accepted_rate is null)"
+    columns:
+      - name: tag
+        description: >
+          The only tag of the questions in the row: 'python' or 'dbt'.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['python', 'dbt']
+      - name: creation_year
+        description: >
+          Year the questions were created (UTC), 2013 to 2022.
+        data_tests:
+          - not_null
+      - name: is_partial_year
+        description: >
+          True for 2022, which covers only January to ~2022-08-26.
+      - name: total_questions
+        description: >
+          Type: absolute count.
+          Number of questions with this single tag created in the year. 0 when there are none.
+          Denominator of the rates and numerator of question_to_answer_ratio.
+      - name: total_answers
+        description: >
+          Type: absolute count.
+          Number of answers posted within 30 days of the creation of these questions. Each answer
+          is counted separately, so a question with three answers contributes three.
+      - name: answered_questions
+        description: >
+          Type: absolute count.
+          Number of questions that received at least one answer within 30 days. A question with
+          five answers contributes one.
+      - name: accepted_questions
+        description: >
+          Type: absolute count.
+          Number of questions with a valid accepted answer posted within 30 days, including
+          self-accepted answers. The dump has no acceptance date, so the answer's posting date
+          is used as a proxy.
+      - name: community_accepted_questions
+        description: >
+          Type: absolute count.
+          Number of questions whose valid accepted answer, posted within 30 days, was written by
+          someone other than the asker.
+      - name: question_to_answer_ratio
+        description: >
+          Type: ratio.
+          Questions per answer, calculated as total_questions / total_answers. Lower values mean
+          more answers for each question. Null when there are no answers.
+      - name: answers_per_question
+        description: >
+          Type: average.
+          Answers per question within 30 days, calculated as total_answers / total_questions. The
+          inverse of question_to_answer_ratio and the same metric as in Q1.
+      - name: accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          accepted_questions / total_questions, self-accepted answers included. Null when the
+          year has no questions.
+      - name: community_accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          community_accepted_questions / total_questions. The main acceptance metric, as in Q1.
+          Null when the year has no questions.
+      - name: question_to_answer_ratio_change_pct
+        description: >
+          Type: change (percent).
+          Change of question_to_answer_ratio from the previous year, relative to it:
+          (this year / previous year - 1) * 100. For example, 0.50 to 0.60 is +20. Null for 2013
+          and whenever either year has no data.
+      - name: accepted_rate_change_pp
+        description: >
+          Type: change (percentage points).
+          accepted_rate minus the previous year's, times 100. For example, 30% to 35% is +5. Null
+          for 2013 and whenever either year has no questions.
+      - name: community_accepted_rate_change_pp
+        description: >
+          Type: change (percentage points).
+          community_accepted_rate minus the previous year's, times 100. Null for 2013 and
+          whenever either year has no questions.

@@ -80,7 +80,7 @@ questions are survivors. Rates computed across that boundary are biased in favou
 | Accepted answer missing from `posts_answers` | 230 |
 | Accepted answer belongs to another question | 62 |
 | Accepted answer created before its question | 40 |
-| Answers created before their question | 507 |
+| Answers created before their question | 507 ² |
 | Questions without owner (deleted account) | 457,862 (2.0%) |
 | Owner id not found in `users` (questions) | 5 |
 | Owner id not found in `users` (answers) | 1 ¹ |
@@ -89,6 +89,12 @@ questions are survivors. Rates computed across that boundary are biased in favou
 | Null `favorite_count` | 78% (null most likely means zero) |
 
 ¹ Measured by the dbt `relationships` test on `stg_answers.owner_user_id`, not by a profiling query.
+
+² These answers are kept: they count in `answers_within_30d` and can mark a question as answered
+within 30 days. An accepted answer created before its question, by contrast, makes the acceptance
+invalid. The asymmetry was left in place: 507 answers are negligible in a dump of tens of millions,
+and aligning the rules would mean rebuilding `fct_questions`. How many fall in each reported tag or
+year was not measured.
 
 **A hypothesis that did not hold.** Only the asker can accept an answer, so questions whose owner deleted
 their account were expected to show a lower accepted-answer rate. They show a *higher* one
