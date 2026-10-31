@@ -52,8 +52,9 @@ combination_metrics as (
         any_value(median_hours_to_first_answer) as median_hours_to_first_answer
     from questions
     group by tag_combination
-    -- Combinations are much smaller than tags: 200 questions keep the margin of error of a rate
-    -- under about 6 percentage points (174 combinations qualify); 500 would leave only 50.
+    -- Combinations are much smaller than tags: 200 questions keep the 95% margin of error of a
+    -- rate at about ±6.8 percentage points at most (174 combinations qualify); 500 would leave
+    -- only 50.
     having count(*) >= 200
 ),
 

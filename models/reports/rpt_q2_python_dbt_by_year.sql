@@ -3,8 +3,11 @@
 --
 -- "Only" = the question has exactly one tag. The last 10 years = 2013 to 2022, the latest
 -- years in the dump; 2022 is partial (January to ~2022-08-26, the questions with a full
--- 30-day window). Every metric counts only what happened in the first 30 days, so a 2013
--- question has no advantage over a 2022 one.
+-- 30-day window). Answers count only if posted within 30 days of the question, so a 2013
+-- question has no advantage over a 2022 one in answers. Acceptance follows that rule only in
+-- part: the dump has no acceptance date, so a question counts as accepted when its accepted
+-- answer was posted within 30 days. The acceptance itself may have happened later, up to the
+-- snapshot, so older questions had more time for it (not measured).
 -- Every tag has a row for every year, even with no questions: dbt has none before 2020, and
 -- its rates stay null in those years instead of showing a misleading 0%.
 with questions as (
