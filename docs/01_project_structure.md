@@ -10,14 +10,21 @@ bigquery-public-data.stackoverflow     (source, read-only)
         ▼  0. Ingestion: none (read in place)
         ▼  1. Profiling: queries/profiling/01–13 → docs/data_quality.md
         ▼
-  stg_*  (views)                        models/staging/
+  stg_*  (views; body features: table)  models/staging/        shared
         ▼
-  fct_questions  (table)                models/marts/
+  fct_questions  (table)                models/marts/          shared
         ▼
-  rpt_q1_*  (tables)                    models/reports/
-        ▼
-  results/*.csv  →  docs/question_1.md  (the analysis reads the reports)
+        ├──► rpt_q1_tags, rpt_q1_tag_combinations  (tables)   models/reports/   Q1
+        │         ▼
+        │    results/q1_*.csv  →  docs/question_1.md
+        │
+        └──► rpt_q2_python_dbt_by_year  (table)               models/reports/   Q2
+                  ▼
+             results/q2_python_dbt_by_year.csv  →  docs/question_2.md
 ```
+
+Staging and the fact table are shared by every question. Each question has its own report
+models, CSV exports and write-up; the reports read only `fct_questions`, never each other.
 
 ## 0. Ingestion: none
 
@@ -93,6 +100,9 @@ The single source of truth for the three questions.
 | `is_accepted_within_30d` | a valid acceptance of an answer posted within 30 days | the dump has no acceptance date; the answer date is the proxy |
 | `has_full_30d_window` | posting date + 30 days falls before the end of the dump | right-censoring |
 
+**Columns added by Q2.** Q2 reuses the columns above and also filters on `creation_year`
+(2013 to 2022) and `tag_count` (exactly one tag), with `tag_combination` as the tag itself.
+
 **Technical decisions**
 - **Clustered by `creation_year`, not partitioned.**
   - **What clustering does:** a filter on `creation_year` lets BigQuery skip the blocks of other
@@ -119,9 +129,17 @@ The single source of truth for the three questions.
   - `tests/assert_fct_questions_keeps_every_question.sql`: one fact row for every staged
     question.
 
-## 4. Reports: one table per Q1 view
+## 4. Reports: one table per question view
 
-All Q1 analytical choices live here.
+All analytical choices live here. Each report reads `fct_questions` only.
+
+| Question | Model | Grain |
+|---|---|---|
+| Q1 | `rpt_q1_tags` | one row per tag |
+| Q1 | `rpt_q1_tag_combinations` | one row per exact tag combination |
+| Q2 | `rpt_q2_python_dbt_by_year` | one row per tag (python, dbt) and year |
+
+### Q1: `rpt_q1_tags` and `rpt_q1_tag_combinations`
 
 | | `rpt_q1_tags` | `rpt_q1_tag_combinations` |
 |---|---|---|
@@ -157,7 +175,45 @@ All Q1 analytical choices live here.
 - the identity;
 - unique key.
 
-## 5. Output: CSVs and the write-up
+### Q2: `rpt_q2_python_dbt_by_year`
 
-- **`results/`:** both reports exported, identical to the tables.
-- **`docs/question_1.md`:** the complete analysis, written from the CSVs.
+| | |
+|---|---|
+| Population | questions whose only tag is `python` or `dbt`, 2013–2022, `has_full_30d_window` |
+| Unit | one tag and one creation year: 2 tags × 10 years = 20 rows |
+| Partial year | 2022 covers January to about 2022-08-26 and is flagged by `is_partial_year` |
+
+**Steps (CTEs)**
+1. `questions`: filters the population.
+2. `tag_years`: every tag × every year, so years without questions still get a row.
+3. `year_metrics`: counts per tag and year.
+4. `year_rates`: joins the counts to `tag_years`; empty years get 0 questions and null rates.
+   Computes the question-to-answer ratio, its inverse and the two acceptance rates.
+5. `year_over_year`: changes against the previous year, with `lag()` per tag.
+6. `final`: rounds to 4 decimals.
+
+**Analytical choices**
+- **"Only python / dbt" = exactly one tag.**
+- **The last 10 years = 2013 to 2022**, with 2022 partial.
+- **Question-to-answer ratio = questions / answers**, the question's wording read literally;
+  answers per question is shown next to it.
+- **Year-over-year change:** the ratio in percent of the previous year; the rates in
+  percentage points.
+- **The main acceptance metric is `community_accepted_rate`**, as in Q1.
+- **dbt has no single-tag questions before 2020.** Those years stay as rows with 0 questions
+  and null rates, never 0%.
+
+**Tests (8, all passing):**
+- unique tag and year;
+- years between 2013 and 2022;
+- answered and accepted questions ≤ total questions;
+- community acceptance ≤ total acceptance;
+- rates null exactly when the year has no questions;
+- `tag` in python / dbt, and not null keys.
+
+## 5. Output: CSVs and the write-ups
+
+- **`results/`:** every report exported, identical to the tables: `q1_tags.csv`,
+  `q1_tag_combinations.csv` and `q2_python_dbt_by_year.csv`.
+- **`docs/question_1.md`** and **`docs/question_2.md`:** the complete analyses, written from
+  the CSVs.

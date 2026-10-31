@@ -12,7 +12,7 @@ models:
         complete 30-day observation window before the dataset ends (last question on 2022-09-25).
       - **Minimum volume:** only tags with at least 500 questions in this population are kept;
         smaller tags are left out of the table because their rates would be too noisy (500 keeps
-        the margin of error of a rate under about 4 percentage points).
+        the 95% margin of error of a rate at about ±4.3 percentage points at most).
       - **Observation window:** every question in the population is included, whatever its creation
         date, but only answers and acceptances from its first 30 days are counted; later ones are
         excluded, so every question is observed for the same period.
@@ -169,8 +169,8 @@ models:
         complete 30-day observation window before the dataset ends (last question on 2022-09-25),
         with at least 2 tags.
       - **Minimum volume:** only combinations with at least 200 questions in this population are
-        kept. Combinations are much smaller than tags: 200 keeps the margin of error of a rate
-        under about 6 percentage points (174 combinations); 500 would leave only 50.
+        kept. Combinations are much smaller than tags: 200 keeps the 95% margin of error of a rate
+        at about ±6.8 percentage points at most (174 combinations); 500 would leave only 50.
       - **Observation window:** every question in the population is included, whatever its creation
         date, but only answers and acceptances from its first 30 days are counted; later ones are
         excluded, so every question is observed for the same period.

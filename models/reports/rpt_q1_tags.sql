@@ -60,8 +60,8 @@ tag_metrics as (
         any_value(median_hours_to_first_answer) as median_hours_to_first_answer
     from question_tags
     group by tag
-    -- 500 questions keep the margin of error of a rate under about 4 percentage points
-    -- (792 tags qualify).
+    -- 500 questions keep the 95% margin of error of a rate at about ±4.3 percentage points at
+    -- most (792 tags qualify).
     having count(*) >= 500
 ),
 
