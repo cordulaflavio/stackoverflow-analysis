@@ -191,7 +191,8 @@ separation between the groups. The lowest lower bound among the ten highest-acce
   The two per-question rankings, answers per question and community acceptance, therefore
   identify largely the same tags at each end. The total-answers ranking mainly reflects size.
 - **Two steps of acceptance.** Community acceptance = answered rate × acceptance among answered
-  questions. The two steps correlate at 0.75 across tags. The bottom tags lose on both: fewer
+  questions. The two steps correlate at 0.75 across tags (Pearson, on the rates; unlike the
+  Spearman rank correlations above). The bottom tags lose on both: fewer
   questions get an answer, and fewer answered questions end with a community-accepted solution.
   For example, cordova is answered 34.0% of the time, and only 19.4% of its answered questions
   reach a community-accepted answer. For awk the figures are 95.7% and 69.9%.
@@ -206,7 +207,9 @@ separation between the groups. The lowest lower bound among the ten highest-acce
   the median tag moves 19 positions. The largest moves are mid-table (cors: 479th → 246th). The top and
   bottom groups do not change.
 - **Stability across thresholds.** Raising the minimum volume to 1,000 questions (419 tags) or
-  2,000 questions (210 tags) keeps the same themes:
+  2,000 questions (210 tags) keeps the same themes at both ends. The names below come from the
+  2,000 cut, among its eight highest and eight lowest tags; at 1,000 the extremes are not
+  identical, but they are the same kinds of tags:
   - top: dplyr, regex, beautifulsoup, dataframe, pandas;
   - bottom: webpack, ssl, nginx, gradle, google-chrome, heroku.
 
@@ -319,8 +322,8 @@ whole is at 32.5%. The language alone says little; the subject of the question m
 
 **Sensitivity to the minimum volume (200 vs 500).**
 - **The top is stable.** With 500+ questions (50 combinations), the leaders are the same kind of
-  tag sets: dplyr\|r, python\|regex, dictionary\|python, dataframe\|pandas\|python, ggplot2\|r and
-  pandas\|python, between 52% and 64%.
+  tag sets: dplyr\|r, python\|regex, dictionary\|python, dataframe\|pandas\|python, ggplot2\|r,
+  dataframe\|r, arrays\|javascript and pandas\|python, between 52% and 64%.
 - **The bottom is not.** None of the ten lowest combinations at 200+ has 500 questions. At 500+,
   the lowest are:
   - php\|wordpress, 18.2% (15.3–21.6);
