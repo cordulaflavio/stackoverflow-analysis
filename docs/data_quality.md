@@ -9,7 +9,7 @@ or, where noted, from a dbt test; each profiling query runs as-is in the BigQuer
 | Area | Finding | Impact |
 |---|---|---|
 | Coverage | Questions and answers end on **2022-09-25** | 2022 is a partial year |
-| Survivorship | Unanswered low-score questions older than ~1 year are missing (auto-deleted) | Answer rates are **not comparable** between questions older and younger than ~1 year |
+| Survivorship | Some unanswered, low-score questions older than ~1 year are missing (auto-deleted when they meet Stack Overflow's cleanup criteria) | Rates of questions older and younger than ~1 year are **comparable only with caveats**: the younger ones still include future deletions; the size of the bias was not measured |
 | Consistency | `answer_count` matches `posts_answers` for 100% of questions; no orphans, no duplicate ids | `answer_count` can be used directly |
 | Accepted answers | 332 of 11.8M accepted answers are broken; 11.4% are self-accepted | Negligible errors; self-acceptance is a definition choice |
 | Tags | `\|`-separated string, clean; parsing matches the official `tags` table within 0.01% | Exact matches such as `tags = 'python'` are safe |
@@ -45,8 +45,10 @@ in `posts_questions` (28.4 GB in `posts_answers`); every other column used here 
 [`12_answer_rate_by_month.sql`](../queries/profiling/12_answer_rate_by_month.sql)
 
 The share of answered questions falls every year, from 99.9% (2008) to 75.8% (2021) and 61.4% (2022).
-Part of that is a real trend, but part is an artifact of the dump: Stack Overflow automatically deletes
-old questions that never got an answer and have a low score, and deleted posts are not in the dump.
+Part of that is a real trend, but part is an artifact of the dump: after about one year, Stack Overflow
+automatically deletes the unanswered questions that meet its cleanup criteria, a score of 0 or less among
+them (see [stackoverflow_rules.md](stackoverflow_rules.md)). Not every unanswered, low-score question is
+deleted, and deleted posts are not in the dump.
 
 The monthly view shows the cut-off clearly, about one year before the end of the data:
 
@@ -62,8 +64,10 @@ with a positive score stay flat. Question volume also rises from October 2021, a
 questions have not been deleted yet. This is consistent with Stack Overflow's automatic cleanup of
 abandoned questions; the dump itself cannot prove the mechanism, but the pattern is unambiguous.
 
-**Consequence:** questions created after roughly 2021-09-25 still include future deletions, while older
-questions are survivors. Rates computed across that boundary are biased in favour of older periods.
+**Consequence:** questions created after roughly 2021-09-25 may still include future deletions, while
+older questions are survivors. Rates computed across that boundary are biased in favour of older periods,
+so comparisons across it remain possible only with that caveat stated. The size of the bias was not
+measured.
 
 ## Consistency between tables
 [`03_questions_completeness.sql`](../queries/profiling/03_questions_completeness.sql),
