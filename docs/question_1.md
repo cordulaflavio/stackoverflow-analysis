@@ -191,7 +191,8 @@ separation between the groups. The lowest lower bound among the ten highest-acce
   The two per-question rankings, answers per question and community acceptance, therefore
   identify largely the same tags at each end. The total-answers ranking mainly reflects size.
 - **Two steps of acceptance.** Community acceptance = answered rate × acceptance among answered
-  questions. The two steps correlate at 0.75 across tags. The bottom tags lose on both: fewer
+  questions. The two steps correlate at 0.75 across tags (Pearson, on the rates; unlike the
+  Spearman rank correlations above). The bottom tags lose on both: fewer
   questions get an answer, and fewer answered questions end with a community-accepted solution.
   For example, cordova is answered 34.0% of the time, and only 19.4% of its answered questions
   reach a community-accepted answer. For awk the figures are 95.7% and 69.9%.
@@ -206,7 +207,9 @@ separation between the groups. The lowest lower bound among the ten highest-acce
   the median tag moves 19 positions. The largest moves are mid-table (cors: 479th → 246th). The top and
   bottom groups do not change.
 - **Stability across thresholds.** Raising the minimum volume to 1,000 questions (419 tags) or
-  2,000 questions (210 tags) keeps the same themes:
+  2,000 questions (210 tags) keeps the same themes at both ends. The names below come from the
+  2,000 cut, among its eight highest and eight lowest tags; at 1,000 the extremes are not
+  identical, but they are the same kinds of tags:
   - top: dplyr, regex, beautifulsoup, dataframe, pandas;
   - bottom: webpack, ssl, nginx, gradle, google-chrome, heroku.
 
@@ -319,8 +322,8 @@ whole is at 32.5%. The language alone says little; the subject of the question m
 
 **Sensitivity to the minimum volume (200 vs 500).**
 - **The top is stable.** With 500+ questions (50 combinations), the leaders are the same kind of
-  tag sets: dplyr\|r, python\|regex, dictionary\|python, dataframe\|pandas\|python, ggplot2\|r and
-  pandas\|python, between 52% and 64%.
+  tag sets: dplyr\|r, python\|regex, dictionary\|python, dataframe\|pandas\|python, ggplot2\|r,
+  dataframe\|r, arrays\|javascript and pandas\|python, between 52% and 64%.
 - **The bottom is not.** None of the ten lowest combinations at 200+ has 500 questions. At 500+,
   the lowest are:
   - php\|wordpress, 18.2% (15.3–21.6);
@@ -451,5 +454,26 @@ technologies that few people master together.
     `models/marts/fct_questions.sql`;
   - column definitions in `models/reports/_reports_models.yml`.
 - **Exports.** `results/q1_tags.csv` and `results/q1_tag_combinations.csv`.
-- **Derived figures.** The Wilson intervals, the comparison with the remainder of the population
-  and the threshold sensitivity are computed from these exports.
+- **Statistics recomputed from the exports.** Three scripts in `scripts/q1/` read only these two
+  CSVs; they run no query and need no dbt. Run them from the repository root with Python 3.10+
+  (standard library only):
+
+  | Script | What it does | Run |
+  |---|---|---|
+  | `compare_with_rest.py` | Reproduces the comparison with the rest of the population: z-test per combination, Holm correction, 99 above / 11 below / 64 not distinguishable. Reads `q1_tag_combinations.csv` | `python scripts/q1/compare_with_rest.py results/q1_tag_combinations.csv` |
+  | `derived_statistics.py` | Reproduces the derived figures: Wilson half-widths, the top/bottom separation and overlaps, the Spearman correlations (average ranks) and the Pearson correlation of the two steps, the 1,000 / 2,000 thresholds, rank moves with self-acceptance, combination coverage, the 200 vs 500 table and the 500+ lists. Prints labelled values to compare with the report; it is not a pass/fail check. Reads both CSVs | `python scripts/q1/derived_statistics.py` |
+  | `check_doc.py` | Checks consistency, not statistics: every table row of this report whose first cell is a tag or a combination is compared with the CSVs (questions, percentages, Wilson intervals, counts, answers per question). Reads both CSVs and this file | `python scripts/q1/check_doc.py` |
+
+- **What the scripts do not cover.** The 2022 baseline, the population counts (1,121,356
+  questions, 988,059 with 2+ tags, 583,276 distinct combinations), the threshold sweep and the
+  frequency-gradient tables come from the SQL in `queries/q1/`. Those queries read the project's
+  BigQuery tables, not the CSVs.
+- **Limitations of the scripts.**
+  - The CSVs hold rates rounded to 4 decimals, not the number of community-accepted questions,
+    so the scripts rebuild it as rate × questions. This is exact for combinations (at most 5,330
+    questions) and off by up to about 9 questions for the largest tag (python, 179,625
+    questions), far below the precision shown in the report.
+  - The 2+ tag population totals are written in the code, because no CSV holds them:
+    `compare_with_rest.py` uses 988,059 questions and 266,963 community-accepted ones;
+    `derived_statistics.py` uses the 988,059. Both come from
+    `queries/q1/06_combination_frequency_gradient.sql` (table A).
