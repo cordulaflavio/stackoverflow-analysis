@@ -1,0 +1,315 @@
+version: 2
+
+models:
+  - name: rpt_q1_tags
+    description: |
+      **Q1, per tag.** "What tags on a Stack Overflow question lead to the most answers and the
+      highest rate of approved (accepted) answers for the current year? What tags lead to the least?"
+      Combinations are answered in rpt_q1_tag_combinations.
+
+      - **Grain:** one row per tag.
+      - **Population:** questions created from 2022-01-01 to ~2022-08-26, the ones with a
+        complete 30-day observation window before the dataset ends (last question on 2022-09-25).
+      - **Minimum volume:** only tags with at least 500 questions in this population are kept;
+        smaller tags are left out of the table because their rates would be too noisy (500 keeps
+        the margin of error of a rate under about 4 percentage points).
+      - **Observation window:** every question in the population is included, whatever its creation
+        date, but only answers and acceptances from its first 30 days are counted; later ones are
+        excluded, so every question is observed for the same period.
+      - **Counting rule:** each question counts once for each of its tags, so it can appear in
+        several tag rows but never twice in the same one. Summing questions across rows therefore
+        gives more than the number of questions.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "total_questions >= 500"
+      # Holds because a question accepted within 30 days was always answered within 30 days.
+      # The tolerance absorbs the rounding to 4 decimals; a wrong definition would miss by points.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "abs(community_accepted_rate - answered_question_rate * community_acceptance_rate_answered) < 0.0002"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answered_question_rate between 0 and 1 and accepted_rate between 0 and 1"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "community_accepted_rate <= accepted_rate"
+    columns:
+      - name: tag
+        description: >
+          Stack Overflow tag associated with the questions included in this analysis.
+          Each question is counted once for each of its tags. Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: total_questions
+        description: >
+          Type: absolute count.
+          Total number of eligible questions carrying this tag. Each question is
+          counted once within a tag, even when it has multiple answers. Denominator
+          for question-level rates and answers_per_question.
+      - name: total_answers
+        description: >
+          Type: absolute count.
+          Total number of answers posted within 30 days of the creation of the
+          associated questions. Each answer is counted separately, so a question
+          with three answers contributes three to this metric.
+      - name: answered_questions
+        description: >
+          Type: absolute count.
+          Number of questions that received at least one answer within 30 days of
+          creation. Each question is counted only once, regardless of how many
+          answers it received. For example, a question with five answers still
+          contributes only one to this metric. Used to calculate answered_question_rate
+          and community_acceptance_rate_answered.
+      - name: unanswered_questions
+        description: >
+          Type: absolute count.
+          Number of questions that received no answers within 30 days of creation,
+          calculated as total_questions - answered_questions.
+      - name: answers_per_question
+        description: >
+          Type: average.
+          Average number of answers received per question within the first 30 days
+          after creation, calculated as total_answers / total_questions. For example, if 10
+          questions receive a total of 30 answers, the average is 30 / 10 = 3 answers
+          per question. Allows comparisons across tags with different question
+          volumes and serves as the primary metric for ranking tags by average
+          answers per question.
+      - name: answered_question_rate
+        description: >
+          Type: rate (0 to 1).
+          Share of questions that received at least one answer within 30 days
+          of creation, calculated as answered_questions / total_questions. Measures how
+          likely a question with this tag is to receive an answer. Should be
+          interpreted alongside answers_per_question: a high average number of
+          answers per question may coexist with a low answered_question_rate if answers are
+          concentrated in a smaller share of questions.
+      - name: accepted_questions
+        description: >
+          Type: absolute count.
+          Number of questions with a valid accepted answer posted within 30 days
+          of question creation, including self-accepted answers. An acceptance is
+          counted only when the accepted answer exists, belongs to the question,
+          and was posted after the question. Since the dump does not provide the
+          acceptance date, the answer's posting date is used as a proxy. Used to
+          calculate accepted_rate and self_accepted_share.
+      - name: accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          Proportion of questions with a valid accepted answer posted within
+          30 days of creation, calculated as accepted_questions / total_questions.
+          Includes both community-accepted and self-accepted answers. Useful for
+          comparing overall acceptance rates with community_accepted_rate.
+      - name: community_accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          Proportion of questions with an accepted answer posted within 30 days
+          of creation by someone other than the question author, calculated over
+          all questions, including unanswered ones. This is the primary acceptance
+          metric for Q1 because it focuses on solutions accepted from other
+          community members. Always less than or equal to accepted_rate.
+      - name: community_acceptance_rate_answered
+        description: >
+          Type: rate (0 to 1).
+          Proportion of answered questions that received an accepted answer from
+          someone other than the question author, calculated as
+          community-accepted questions / answered_questions. Measures the
+          community acceptance rate specifically among questions that received
+          at least one answer.
+      - name: self_accepted_share
+        description: >
+          Type: rate (0 to 1).
+          Proportion of accepted questions in which the question author also wrote
+          the accepted answer, calculated as self-accepted questions /
+          accepted_questions. Indicates the share of accepted questions that were
+          resolved through self-answers rather than answers from other community
+          members.
+      - name: median_hours_to_first_answer
+        description: >
+          Type: median (hours).
+          Median number of hours between question creation and the first answer,
+          considering only questions that received an answer within 30 days.
+          Unanswered questions are excluded.
+      - name: rank_answers
+        description: >
+          Type: rank.
+          Rank of the tag by answers_per_question, in descending order.
+          Rank 1 indicates the highest average number of answers per question.
+          Ties share the same rank, and the next rank is skipped. Higher rank
+          numbers indicate lower answers_per_question values.
+      - name: rank_community_accepted
+        description: >
+          Type: rank.
+          Rank of the tag by community_accepted_rate, in descending order.
+          Rank 1 indicates the highest proportion of questions receiving a
+          community-accepted answer. Ties share the same rank, and the next
+          rank is skipped. Higher rank numbers indicate lower
+          community_accepted_rate values.
+      - name: rank_if_self_accepted_counted
+        description: >
+          Type: rank.
+          Rank of the tag by accepted_rate, in descending order, including
+          self-accepted answers. Ties share the same rank, and the next rank
+          is skipped. Used as a sensitivity comparison with
+          rank_community_accepted to show how including self-accepted answers
+          affects the relative ranking of tags.
+
+  - name: rpt_q1_tag_combinations
+    description: |
+      **Q1, per tag combination.** "How about combinations of tags?" The same two questions as
+      rpt_q1_tags (most / fewest answers, highest / lowest acceptance), asked of combinations.
+      Single tags are answered in rpt_q1_tags.
+
+      - **Grain:** one row per tag combination.
+      - **Combination:** the exact set of a question's tags, 2 or more, sorted alphabetically
+        ('pandas|python'). It holds only questions tagged exactly pandas and python; a question
+        that adds numpy belongs to 'numpy|pandas|python'.
+      - **Population:** questions created from 2022-01-01 to ~2022-08-26, the ones with a
+        complete 30-day observation window before the dataset ends (last question on 2022-09-25),
+        with at least 2 tags.
+      - **Minimum volume:** only combinations with at least 200 questions in this population are
+        kept. Combinations are much smaller than tags: 200 keeps the margin of error of a rate
+        under about 6 percentage points (174 combinations); 500 would leave only 50.
+      - **Observation window:** every question in the population is included, whatever its creation
+        date, but only answers and acceptances from its first 30 days are counted; later ones are
+        excluded, so every question is observed for the same period.
+      - **Counting rule:** each question belongs to exactly one combination, so, unlike
+        rpt_q1_tags, no question is counted twice across rows.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "total_questions >= 200 and tag_count >= 2"
+      # Holds because a question accepted within 30 days was always answered within 30 days.
+      # The tolerance absorbs the rounding to 4 decimals; a wrong definition would miss by points.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "abs(community_accepted_rate - answered_question_rate * community_acceptance_rate_answered) < 0.0002"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answered_question_rate between 0 and 1 and accepted_rate between 0 and 1"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "community_accepted_rate <= accepted_rate"
+    columns:
+      - name: tag_combination
+        description: Tags of the combination, sorted alphabetically and '|'-separated. Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: tag_count
+        description: >
+          Number of tags in the combination. 2 to 4 in practice: no 5-tag combination reaches
+          200 questions.
+      - name: total_questions
+        description: >
+          Type: absolute count.
+          Total number of eligible questions tagged with exactly this combination. Each
+          question belongs to one combination and is counted once, even when it has multiple
+          answers. Denominator for question-level rates and answers_per_question.
+      - name: total_answers
+        description: >
+          Type: absolute count.
+          Total number of answers posted within 30 days of the creation of the
+          associated questions. Each answer is counted separately, so a question
+          with three answers contributes three to this metric.
+      - name: answered_questions
+        description: >
+          Type: absolute count.
+          Number of questions that received at least one answer within 30 days of
+          creation. Each question is counted only once, regardless of how many
+          answers it received. For example, a question with five answers still
+          contributes only one to this metric. Used to calculate answered_question_rate
+          and community_acceptance_rate_answered.
+      - name: unanswered_questions
+        description: >
+          Type: absolute count.
+          Number of questions that received no answers within 30 days of creation,
+          calculated as total_questions - answered_questions.
+      - name: answers_per_question
+        description: >
+          Type: average.
+          Average number of answers received per question within the first 30 days
+          after creation, calculated as total_answers / total_questions. For example, if 10
+          questions receive a total of 30 answers, the average is 30 / 10 = 3 answers
+          per question. Allows comparisons across combinations with different question
+          volumes and serves as the primary metric for ranking combinations by average
+          answers per question.
+      - name: answered_question_rate
+        description: >
+          Type: rate (0 to 1).
+          Share of questions that received at least one answer within 30 days
+          of creation, calculated as answered_questions / total_questions. Measures how
+          likely a question with this combination is to receive an answer. Should be
+          interpreted alongside answers_per_question: a high average number of
+          answers per question may coexist with a low answered_question_rate if answers are
+          concentrated in a smaller share of questions.
+      - name: accepted_questions
+        description: >
+          Type: absolute count.
+          Number of questions with a valid accepted answer posted within 30 days
+          of question creation, including self-accepted answers. An acceptance is
+          counted only when the accepted answer exists, belongs to the question,
+          and was posted after the question. Since the dump does not provide the
+          acceptance date, the answer's posting date is used as a proxy. Used to
+          calculate accepted_rate and self_accepted_share.
+      - name: accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          Proportion of questions with a valid accepted answer posted within
+          30 days of creation, calculated as accepted_questions / total_questions.
+          Includes both community-accepted and self-accepted answers. Useful for
+          comparing overall acceptance rates with community_accepted_rate.
+      - name: community_accepted_rate
+        description: >
+          Type: rate (0 to 1).
+          Proportion of questions with an accepted answer posted within 30 days
+          of creation by someone other than the question author, calculated over
+          all questions, including unanswered ones. This is the primary acceptance
+          metric for Q1 because it focuses on solutions accepted from other
+          community members. Always less than or equal to accepted_rate.
+      - name: community_acceptance_rate_answered
+        description: >
+          Type: rate (0 to 1).
+          Proportion of answered questions that received an accepted answer from
+          someone other than the question author, calculated as
+          community-accepted questions / answered_questions. Measures the
+          community acceptance rate specifically among questions that received
+          at least one answer.
+      - name: self_accepted_share
+        description: >
+          Type: rate (0 to 1).
+          Proportion of accepted questions in which the question author also wrote
+          the accepted answer, calculated as self-accepted questions /
+          accepted_questions. Indicates the share of accepted questions that were
+          resolved through self-answers rather than answers from other community
+          members.
+      - name: median_hours_to_first_answer
+        description: >
+          Type: median (hours).
+          Median number of hours between question creation and the first answer,
+          considering only questions that received an answer within 30 days.
+          Unanswered questions are excluded.
+      - name: rank_answers
+        description: >
+          Type: rank.
+          Rank of the combination by answers_per_question, in descending order.
+          Rank 1 indicates the highest average number of answers per question.
+          Ties share the same rank, and the next rank is skipped. Higher rank
+          numbers indicate lower answers_per_question values.
+      - name: rank_community_accepted
+        description: >
+          Type: rank.
+          Rank of the combination by community_accepted_rate, in descending order.
+          Rank 1 indicates the highest proportion of questions receiving a
+          community-accepted answer. Ties share the same rank, and the next
+          rank is skipped. Higher rank numbers indicate lower
+          community_accepted_rate values.
+      - name: rank_if_self_accepted_counted
+        description: >
+          Type: rank.
+          Rank of the combination by accepted_rate, in descending order, including
+          self-accepted answers. Ties share the same rank, and the next rank
+          is skipped. Used as a sensitivity comparison with
+          rank_community_accepted to show how including self-accepted answers
+          affects the relative ranking of combinations.

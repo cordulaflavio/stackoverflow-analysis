@@ -7,7 +7,17 @@ models:
       table on purpose: the scope is three analytical questions, BigQuery is columnar, and the
       user attributes that matter must be measured at posting time, so they belong to the
       question grain. Stores neutral facts only; analytical choices live in the report models.
-      Clustered by creation_year (not partitioned: sandbox partitions expire after 60 days).
+      Clustered by creation_year, not partitioned: about 0.4 GB per year is far below the
+      ~10 GB per partition where BigQuery suggests partitioning, and sandbox partitions expire
+      60 days after their partition boundary.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "answers_within_30d <= answer_count"
+      # The same set of tags must always produce the same combination, whatever the source order.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "tag_combination = array_to_string(array(select tag from unnest(tags) as tag order by tag), '|')"
     columns:
       - name: question_id
         description: Primary key.
@@ -25,9 +35,11 @@ models:
       - name: created_weekday
         description: Day of week of created_at in UTC, 1 = Sunday to 7 = Saturday.
       - name: tags
-        description: Current tags as an array, for per-tag analysis with unnest().
+        description: Current tags as an array, in the source order, for per-tag analysis with unnest().
       - name: tag_combination
-        description: Current tags as the original '|'-separated string; one value per combination.
+        description: >
+          Current tags sorted alphabetically and '|'-separated, so the same set of tags always
+          gives the same combination ('pandas|python' whatever the order in the source).
         data_tests:
           - not_null
       - name: tag_count
@@ -60,6 +72,10 @@ models:
         description: Answers at the snapshot date.
       - name: is_answered
         description: At least one answer at the snapshot date (no time window).
+      - name: answers_within_30d
+        description: >
+          Answers posted within 30 days of the question. Unlike answer_count, it gives every
+          question the same observation window (meaningful when has_full_30d_window is true).
       - name: first_answer_at
         description: Creation timestamp of the earliest answer.
       - name: hours_to_first_answer
