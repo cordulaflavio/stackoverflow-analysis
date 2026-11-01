@@ -6,6 +6,8 @@
 -- A combination is the exact set of a question's tags (2 or more), sorted alphabetically:
 -- 'pandas|python' holds only questions tagged exactly pandas and python, not those that add
 -- a third tag. Each question belongs to one combination.
+
+-- The 2022 population with 2+ tags: questions with a complete 30-day window, one row each.
 with questions as (
     select
         question_id,
@@ -28,6 +30,7 @@ with questions as (
         and tag_count >= 2
 ),
 
+-- Counts and rates per combination; combinations under 200 questions are dropped (see having).
 combination_metrics as (
     select
         tag_combination,
@@ -58,6 +61,7 @@ combination_metrics as (
     having count(*) >= 200
 ),
 
+-- Ranks on the unrounded rates (rounding happens in final).
 ranked as (
     select
         tag_combination,
@@ -80,9 +84,9 @@ ranked as (
     from combination_metrics
 ),
 
+-- Rounded only after ranking, so rounding cannot create artificial ties. Four decimals are
+-- far finer than the margin of error, and every rate can be recomputed from the counts.
 final as (
-    -- Rounded only after ranking, so rounding cannot create artificial ties. Four decimals are
-    -- far finer than the margin of error, and every rate can be recomputed from the counts.
     select
         tag_combination,
         tag_count,
