@@ -81,7 +81,7 @@ code, comments, YAML docs, README and commit messages.
 
 ## Build, Run & Test Commands
 Run from the repository root with the virtual environment active (`.venv\Scripts\activate.bat` in cmd).
-The dbt profile setup is described in `profiles.yml.example`.
+Full setup (profile, environment variables, build order): [docs/setup.md](docs/setup.md).
 
 ```
 pip install -r requirements.txt     # dbt-core and dbt-bigquery, pinned
