@@ -32,17 +32,27 @@ write-up against the exported CSVs.
 [Full write-up](docs/question_1.md) · [tags CSV](results/q1_tags.csv) ·
 [combinations CSV](results/q1_tag_combinations.csv)
 
-### Q2. python-only vs dbt-only, year over year, 2013–2022
-[Full write-up](docs/question_2.md) · [CSV](results/q2_python_dbt_by_year.csv)
+### Q2. python vs dbt
 
-- **python:** answers and acceptance declined steadily from 2013 to 2021. Community acceptance
-  fell from 63.9% to 41.5%, and 6 of the 8 yearly changes exceed their margin of error.
-- **dbt:** no question is tagged only `dbt` before 2020, so there are only two year-over-year
-  changes, both within their margin of error. No dbt trend can be stated.
-- **Comparison:** in the same years, dbt-only questions get fewer answers per question and about
-  half of python's community acceptance (21.7% vs 41.0%, 2020–2022 pooled).
-- **Confidence:** high for the python direction; moderate for the python vs dbt gap (157 dbt
+> *For posts which are tagged with only ‘python’ or ‘dbt’, what is the year over year change
+> of question-to-answer ratio for the last 10 years? How about the rate of approved answers on
+> questions for the same time period? How do posts tagged with only ‘python’ compare to posts
+> only tagged with ‘dbt’?*
+
+**Answer (2013–2022; 2022 runs to late August):**
+- **Question-to-answer ratio:** python-only rose from 0.46 (2013) to 0.67 (2021), +44%, so
+  each question gets fewer answers; the yearly changes range from −1.6% to +16.7%, and 2022
+  adds +16.7% (0.78). dbt-only exists only from 2020: 0.89, then +23.6% and −2.9%.
+- **Approved answers:** python-only community acceptance fell from 63.9% to 41.5% (2013–2021,
+  about −2.8 pp a year), and 6 of the 8 yearly drops exceed their margin of error; 2022 adds
+  −5.7 pp, probably overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
+  about ±14–18 pp: no dbt trend can be stated.
+- **python vs dbt:** dbt-only questions get fewer answers (ratio 0.89–1.09 vs 0.62–0.78 in
+  2020–2022) and about half the acceptance (21.7% vs 41.0% pooled, a gap of 19.3 ± 6.5 pp).
+- **Confidence:** high for the python decline; moderate for the python vs dbt gap (157 dbt
   questions); none for a dbt trend.
+
+[Full write-up](docs/question_2.md) · [CSV](results/q2_python_dbt_by_year.csv)
 
 ### Q3. Which post qualities, other than tags, go with answers and acceptance?
 [Full write-up](docs/question_3.md) · [CSV](results/q3_post_qualities.csv)

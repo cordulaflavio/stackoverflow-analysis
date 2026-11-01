@@ -5,6 +5,19 @@
 > same time period? How do questions tagged with only 'python' compare to questions only tagged
 > with 'dbt'?*
 
+**Answer (2013–2022; 2022 runs to late August):**
+- **Question-to-answer ratio:** python-only rose from 0.46 (2013) to 0.67 (2021), +44%, so
+  each question gets fewer answers; the yearly changes range from −1.6% to +16.7%, and 2022
+  adds +16.7% (0.78). dbt-only exists only from 2020: 0.89, then +23.6% and −2.9%.
+- **Approved answers:** python-only community acceptance fell from 63.9% to 41.5% (2013–2021,
+  about −2.8 pp a year), and 6 of the 8 yearly drops exceed their margin of error; 2022 adds
+  −5.7 pp, probably overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
+  about ±14–18 pp: no dbt trend can be stated.
+- **python vs dbt:** dbt-only questions get fewer answers (ratio 0.89–1.09 vs 0.62–0.78 in
+  2020–2022) and about half the acceptance (21.7% vs 41.0% pooled, a gap of 19.3 ± 6.5 pp).
+- **Confidence:** high for the python decline; moderate for the python vs dbt gap (157 dbt
+  questions); none for a dbt trend.
+
 ## Executive summary
 
 - **python-only questions show a long decline in answers and acceptance from 2013 to 2021:**
@@ -107,6 +120,8 @@ for the ratio.
 | 2021 | 15,811 | 23,670 | 0.67 | +7.0% | 41.5% | −2.6 | 42.8% | −2.4 |
 | 2022 (partial) | 11,157 | 14,307 | 0.78 | +16.7% | 35.8% | −5.7 | 36.7% | −6.1 |
 
+<img src="images/q2_python_changes.png" alt="python-only yearly change in community acceptance with 95% margins: six of eight drops from 2014 to 2021 exceed their margin; 2018 and 2019 do not" width="640">
+
 **Facts**
 - **Questions grew faster than answers.** Questions doubled from 2013 to 2020 (7,819 → 16,256);
   answers grew by 55% (16,829 → 26,042).
@@ -180,6 +195,10 @@ The size of each effect was not measured. Since 2013–2021 already declines ste
 | 2021 | 15,811 / 58 | 0.67 / 1.09 | 41.5% / 19.0% | 22.5 ± 10.1 |
 | 2022 (partial) | 11,157 / 68 | 0.78 / 1.06 | 35.8% / 22.1% | 13.7 ± 9.9 |
 | 2020–2022 pooled | 43,224 / 157 | 0.68 / 1.03 | 41.0% / 21.7% | 19.3 ± 6.5 |
+
+<img src="images/q2_ratio_by_year.png" alt="Question-to-answer ratio per year: python-only from 0.46 in 2013 to 0.78 in 2022; dbt-only 0.89, 1.09 and 1.06 in 2020 to 2022" width="640">
+
+<img src="images/q2_acceptance_by_year.png" alt="Community acceptance per year with 95% margins: python-only from 63.9% in 2013 to 35.8% in 2022 with a narrow band; dbt-only 25.8%, 19.0% and 22.1% with wide error bars" width="640">
 
 **Facts**
 - **dbt has the higher question-to-answer ratio every year.** In answers per question, the
@@ -258,3 +277,5 @@ both the fewer answers per question and the lower acceptance.
     with this report; it is not a pass/fail check. Run `python scripts/q2/derived_statistics.py`.
   - `check_doc.py` checks the three tables of this report against the export. Numbers quoted in
     the running text are not checked by it. Run `python scripts/q2/check_doc.py`.
+- **Charts.** `scripts/q2/charts.py` draws the three charts of this report into `docs/images/`
+  from the export. It needs matplotlib (`requirements.txt`). Run `python scripts/q2/charts.py`.
