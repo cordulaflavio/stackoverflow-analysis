@@ -20,7 +20,7 @@ write-up against the exported CSVs.
 - **Most:** text and data manipulation tags. awk and sed get the most answers per question
   (2.44 and 2.18, against 0.80 overall); awk, jq, data.table and dplyr the highest acceptance
   (64–67% get a community-accepted answer, against 27%). In total answers python, javascript
-  and reactjs lead, only because they are the largest tags.
+  and reactjs lead, mostly because they are the largest tags.
 - **Least:** platform and tooling tags. facebook gets the fewest answers per question (0.28);
   appium, cordova and facebook the lowest acceptance (6.5–6.8%).
 - **Combinations:** javascript|regex, dplyr|r and python|regex lead (64–66%);
@@ -45,7 +45,7 @@ write-up against the exported CSVs.
   adds +16.7% (0.78). dbt-only exists only from 2020: 0.89, then +23.6% and −2.9%.
 - **Approved answers:** python-only community acceptance fell from 63.9% to 41.5% (2013–2021,
   about −2.8 pp a year), and 6 of the 8 yearly drops exceed their margin of error; 2022 adds
-  −5.7 pp, probably overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
+  −5.7 pp, possibly overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
   about ±14–18 pp: no dbt trend can be stated.
 - **python vs dbt:** dbt-only questions get fewer answers (ratio 0.89–1.09 vs 0.62–0.78 in
   2020–2022) and about half the acceptance (21.7% vs 41.0% pooled, a gap of 19.3 ± 6.5 pp).
@@ -106,7 +106,7 @@ shape the data are in [stackoverflow_rules.md](docs/stackoverflow_rules.md).
 - **Small dbt sample.** 31–68 dbt-only questions per year.
 - **Current state only.** Tags, title and body are the latest version; never-edited questions are
   used as a robustness check.
-- **Data errors are small.** 332 broken accepted answers out of 11.8M; `answer_count` matches the
+- **Data errors are small.** 331 questions with a broken accepted answer out of 11.8M; `answer_count` matches the
   answers table for every question.
 
 ## How it is built
@@ -198,4 +198,3 @@ flowchart LR
 - A tag-pair view for Q1, which covers more questions than exact combinations.
 - An exact test (Fisher) for the small dbt samples in Q2.
 - CI running `dbt parse` and the `check_doc.py` scripts on every pull request.
-- Versions of the key queries that run as-is in the BigQuery console.

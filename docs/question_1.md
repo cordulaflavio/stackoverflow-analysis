@@ -8,7 +8,7 @@
 - **Most:** text and data manipulation tags. awk and sed get the most answers per question
   (2.44 and 2.18, against 0.80 overall); awk, jq, data.table and dplyr the highest acceptance
   (64–67% get a community-accepted answer, against 27%). In total answers python, javascript
-  and reactjs lead, only because they are the largest tags.
+  and reactjs lead, mostly because they are the largest tags.
 - **Least:** platform and tooling tags. facebook gets the fewest answers per question (0.28);
   appium, cordova and facebook the lowest acceptance (6.5–6.8%).
 - **Combinations:** javascript|regex, dplyr|r and python|regex lead (64–66%);
@@ -87,8 +87,8 @@ Neither is the number of answered questions. A question with five answers adds f
 `total_answers` and one to `answered_questions`.
 
 **Valid acceptance.** An acceptance counts only if the accepted answer exists, belongs to the
-question and was posted after it. Profiling found 332 accepted-answer ids that fail these
-checks, out of 11.8M accepted questions.
+question and was posted after it. Profiling found 331 questions whose accepted answer fails these
+checks (332 failed checks: one question fails two), out of 11.8M accepted questions.
 
 **Why community acceptance is the main rate.** A self-accepted answer means the asker wrote the
 answer they accepted. The community may still have helped, for example through comments or other
@@ -468,6 +468,11 @@ technologies that few people master together.
 9. **Current tags.** Tags can be edited after posting. The never-edited control addresses this for
    the frequency gradient, but not for the tag and combination rankings.
 10. **Partial year.** "2022" covers January to late August, not the full calendar year.
+11. **Ownerless questions.** When the asker deleted the account, a self-acceptance cannot be
+    detected, so the question counts as community-accepted. A deleted account also loses its
+    answers, so only questions whose accepted answer is ownerless too could hide one: 275 of the
+    304,920 community acceptances in 2022, at most 0.02 pp of the rate
+    (`queries/q1/08_ownerless_acceptance.sql`).
 
 ## Reproducibility
 

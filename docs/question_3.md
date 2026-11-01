@@ -278,6 +278,24 @@ Two subsets of the population, never mixed into it and not representative of it:
 - **Reading:** the four main associations survive both checks. The weaker ones may partly reflect
   the mix of topics, since they fade within a single tag.
 
+**Code within body length and account age.** Code also lengthens the body, and its askers may be
+more experienced, so the code gap was recomputed within strata (2022, known account age;
+`queries/q3/02_code_gap_stratified.sql`). Community acceptance, questions with at least one code
+block minus questions without:
+
+| Stratification | Gap (pp) | Range across strata |
+|---|---:|---:|
+| None | 12.1 | |
+| Account age (5 buckets) | 11.7 | 11.5 to 11.9 |
+| Body length (5 buckets) | 14.3 | 13.1 to 15.5 |
+| Body length × account age (25 cells) | 14.0 | 10.4 to 18.9 |
+
+- **Account age does not explain the gap:** it is nearly the same in every bucket.
+- **Holding body length fixed makes the gap larger:** long bodies do worse and code makes bodies
+  longer, so the one-attribute comparison understates the code gap.
+- The gap is positive in all 25 cells. Other differences between askers who post code and those
+  who do not remain uncontrolled.
+
 ## Confidence
 
 - **Code, new accounts, very long bodies, error reports: high** for the direction in 2022. Large
@@ -293,7 +311,8 @@ Two subsets of the population, never mixed into it and not representative of it:
 1. **Association, not causation.** Askers who include code may also be more experienced or ask
    about different problems. Nothing here shows that changing a post would change its outcome.
 2. **One attribute at a time.** Attributes overlap (code lengthens the body; error reports often
-   come with code) and were not modelled jointly.
+   come with code) and were not modelled jointly. The code gap was checked within body length and
+   account age and holds (see Robustness); the other attributes were not.
 3. **Survivorship.** Deleted questions are absent. Questions younger than about one year at the
    snapshot (late 2021 and 2022) may still include future deletions. Its effect on rates and on
    gaps between buckets was not measured, and it may differ by attribute and by year.
