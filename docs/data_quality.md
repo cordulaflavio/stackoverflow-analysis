@@ -112,7 +112,10 @@ their account were expected to show a lower accepted-answer rate. They show a *h
 questions are therefore kept.
 
 **Self-accepted answers.** 11.4% of accepted answers were written by the asker. Whether they count as
-"accepted" is a metric-definition choice, made explicitly in the metric definitions.
+"accepted" is a metric-definition choice, made explicitly in the metric definitions. When the asker
+deleted the account, a self-acceptance cannot be detected; in the 2022 Q1 population this could hide
+at most 275 of 304,920 community acceptances, 0.02 pp of the rate
+([`queries/q1/08_ownerless_acceptance.sql`](../queries/q1/08_ownerless_acceptance.sql)).
 
 ## Tags
 [`08_tags_format.sql`](../queries/profiling/08_tags_format.sql),

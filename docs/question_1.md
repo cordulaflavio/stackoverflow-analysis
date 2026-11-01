@@ -468,6 +468,11 @@ technologies that few people master together.
 9. **Current tags.** Tags can be edited after posting. The never-edited control addresses this for
    the frequency gradient, but not for the tag and combination rankings.
 10. **Partial year.** "2022" covers January to late August, not the full calendar year.
+11. **Ownerless questions.** When the asker deleted the account, a self-acceptance cannot be
+    detected, so the question counts as community-accepted. A deleted account also loses its
+    answers, so only questions whose accepted answer is ownerless too could hide one: 275 of the
+    304,920 community acceptances in 2022, at most 0.02 pp of the rate
+    (`queries/q1/08_ownerless_acceptance.sql`).
 
 ## Reproducibility
 

@@ -92,7 +92,10 @@ models:
       - name: accepted_answer_created_at
         description: Creation timestamp of the valid accepted answer.
       - name: is_self_accepted
-        description: The valid accepted answer was written by the asker.
+        description: >
+          The valid accepted answer was written by the asker. False when the asker's account was
+          deleted (owner unknown); in 2022 this could hide at most 275 self-acceptances
+          (queries/q1/08_ownerless_acceptance.sql).
       - name: is_accepted_within_30d
         description: >
           The valid accepted answer was posted within 30 days of the question. The dump has no
