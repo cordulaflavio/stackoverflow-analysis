@@ -76,7 +76,7 @@ code, comments, YAML docs, README and commit messages.
   `Co-Authored-By: Claude <noreply@anthropic.com>`. AI use is also described in the README
   ("How I used AI").
 - One branch and one pull request per deliverable. The user creates branches and pushes.
-- Never run `git pull`.
+- Never run `git push`.
 - Never commit secrets, `profiles.yml`, `.env`, key files, `target/`, `logs/` or `dbt_packages/`.
 
 ## Build, Run & Test Commands
@@ -92,7 +92,7 @@ dbt compile --select <model>        # writes the plain SQL to target/compiled/ w
 dbt build --select <model>          # builds a model and runs its tests (billed)
 dbt test --select <model>           # runs a model's tests only (billed)
 python scripts/export_results.py    # exports every report table to results/ (free)
-python scripts/q1/check_doc.py      # checks a question doc against its CSV (also scripts/q3/)
+python scripts/q1/check_doc.py      # checks a question doc against its CSV (also scripts/q2/, scripts/q3/)
 ```
 - Billed commands follow the cost rule above.
 - `stg_question_body_features` (tag `heavy`) reads `body`. Add `--exclude tag:heavy` to any wider
