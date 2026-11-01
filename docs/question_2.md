@@ -1,9 +1,9 @@
 # Question 2: python vs dbt, year over year
 
-> *For posts which are tagged with only 'python' or 'dbt', what is the year over year change of
-> question-to-answer ratio for the last 10 years? How about the rate of approved answers on the
-> same time period? How do questions tagged with only 'python' compare to questions only tagged
-> with 'dbt'?*
+> *For posts which are tagged with only ‘python’ or ‘dbt’, what is the year over year change of
+> question-to-answer ratio for the last 10 years? How about the rate of approved answers on
+> questions for the same time period? How do posts tagged with only ‘python’ compare to posts
+> only tagged with ‘dbt’?*
 
 **Answer (2013–2022; 2022 runs to late August):**
 - **Question-to-answer ratio:** python-only rose from 0.46 (2013) to 0.67 (2021), +44%, so
