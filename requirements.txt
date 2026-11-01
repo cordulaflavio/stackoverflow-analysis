@@ -9,3 +9,6 @@
 
 dbt-core>=1.12,<1.13
 dbt-bigquery==1.12.1
+
+# Charts in docs/ (scripts/q*/charts.py); the other scripts use the standard library only.
+matplotlib==3.10.3

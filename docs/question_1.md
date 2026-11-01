@@ -48,20 +48,21 @@ with a complete 30-day observation window. That means questions created from 202
 and acceptances that happen later are not counted, so a January question has no advantage over
 an August one. In the dump, 94.7% of first answers arrive within 30 days.
 
-**Metric definitions.** All metrics are computed per tag or per combination.
+**Metric definitions.** All metrics are computed per tag or per combination. The definitions
+are the column descriptions of `models/reports/_reports_models.yml`.
 
-| Metric | Definition |
-|---|---|
-| `total_questions` | questions in the group; the denominator of the question-level rates |
-| `total_answers` | answers posted within 30 days. A question with three answers adds three |
-| `answered_questions` | questions with at least one answer within 30 days. A question with five answers adds one |
-| `answers_per_question` | total_answers / total_questions |
-| `answered_question_rate` | answered_questions / total_questions |
-| `community_accepted_rate` | questions whose accepted answer, posted within 30 days, was written by someone other than the asker, divided by total_questions. **The main acceptance metric** |
-| `accepted_rate` | the same, but self-accepted answers included |
-| `community_acceptance_rate_answered` | community-accepted questions / answered_questions |
-| `self_accepted_share` | self-accepted questions / accepted questions |
-| `median_hours_to_first_answer` | exact median, over questions answered within 30 days |
+| Metric | Type | Definition |
+|---|---|---|
+| `total_questions` | absolute count | Total number of eligible questions carrying the tag (or in the combination). Each question is counted once within a tag or combination, even when it has multiple answers. Denominator for question-level rates and answers_per_question. |
+| `total_answers` | absolute count | Total number of answers posted within 30 days of the creation of the associated questions. Each answer is counted separately, so a question with three answers contributes three to this metric. |
+| `answered_questions` | absolute count | Number of questions that received at least one answer within 30 days of creation. Each question is counted only once, regardless of how many answers it received. For example, a question with five answers still contributes only one to this metric. Used to calculate answered_question_rate and community_acceptance_rate_answered. |
+| `answers_per_question` | average | Average number of answers received per question within the first 30 days after creation, calculated as total_answers / total_questions. For example, if 10 questions receive a total of 30 answers, the average is 30 / 10 = 3 answers per question. Allows comparisons across tags or combinations with different question volumes and serves as the primary metric for ranking them by average answers per question. |
+| `answered_question_rate` | rate (0 to 1) | Share of questions that received at least one answer within 30 days of creation, calculated as answered_questions / total_questions. Measures how likely a question with this tag or combination is to receive an answer. Should be interpreted alongside answers_per_question: a high average number of answers per question may coexist with a low answered_question_rate if answers are concentrated in a smaller share of questions. |
+| `accepted_rate` | rate (0 to 1) | Proportion of questions with a valid accepted answer posted within 30 days of creation, calculated as accepted_questions / total_questions. Includes both community-accepted and self-accepted answers. Useful for comparing overall acceptance rates with community_accepted_rate. |
+| `community_accepted_rate` | rate (0 to 1) | Proportion of questions with an accepted answer posted within 30 days of creation by someone other than the question author, calculated over all questions, including unanswered ones. **This is the primary acceptance metric for Q1** because it focuses on solutions accepted from other community members. Always less than or equal to accepted_rate. |
+| `community_acceptance_rate_answered` | rate (0 to 1) | Proportion of answered questions that received an accepted answer from someone other than the question author, calculated as community-accepted questions / answered_questions. Measures the community acceptance rate specifically among questions that received at least one answer. |
+| `self_accepted_share` | rate (0 to 1) | Proportion of accepted questions in which the question author also wrote the accepted answer, calculated as self-accepted questions / accepted_questions. Indicates the share of accepted questions that were resolved through self-answers rather than answers from other community members. |
+| `median_hours_to_first_answer` | median (hours) | Median number of hours between question creation and the first answer, considering only questions that received an answer within 30 days. Unanswered questions are excluded. |
 
 **Two readings of "most answers".** The question can be read in two ways, and both are reported:
 - **Total answers:** the volume a tag receives. It depends mostly on how many questions the tag
@@ -179,7 +180,11 @@ established ranking**: the intervals of neighbouring tags overlap. What the data
 separation between the groups. The lowest lower bound among the ten highest-acceptance tags is
 53.6%, and the highest upper bound among the ten lowest is 11.4%.
 
+<img src="images/q1_tag_extremes.png" alt="The ten highest and ten lowest tags by community acceptance, with 95% Wilson intervals and the 2022 baseline" width="560">
+
 **Further observations**
+
+<img src="images/q1_tag_scatter.png" alt="Community acceptance of the 792 tags against answers per question (Spearman 0.92) and against tag size (Spearman 0.17)" width="720">
 
 - **The per-question metrics move together, total answers do not.** Across the 792 tags
   (Spearman):
@@ -270,6 +275,8 @@ analysis.
 | expo\|react-native | 319 | 0.55 | 12.8% (9.6–17.0) |
 | python\|tensorflow | 400 | 0.53 | 16.5% (13.2–20.5) |
 
+<img src="images/q1_combination_extremes.png" alt="The ten highest and ten lowest combinations by community acceptance, with 95% Wilson intervals and the 2+ tag baseline" width="600">
+
 **Most and fewest answers per question.**
 - The most: dictionary\|list\|python (2.07), arrays\|javascript\|object (2.00), list\|python
   (1.91) and arrays\|javascript (1.91).
@@ -351,6 +358,8 @@ whole is at 32.5%. The language alone says little; the subject of the question m
 | 20–199 | 121,468 | 41,166 | 33.9% |
 | 2–19 | 247,087 | 70,268 | 28.4% |
 | 1 question (unique) | 512,711 | 112,850 | 22.0% |
+
+<img src="images/q1_frequency_gradient.png" alt="Community acceptance by how many 2022 questions share the exact tag set: 40.0%, 33.9%, 28.4% and 22.0%" width="560">
 
 **B. Controls (community acceptance rate)**
 
@@ -454,15 +463,16 @@ technologies that few people master together.
     `models/marts/fct_questions.sql`;
   - column definitions in `models/reports/_reports_models.yml`.
 - **Exports.** `results/q1_tags.csv` and `results/q1_tag_combinations.csv`.
-- **Statistics recomputed from the exports.** Three scripts in `scripts/q1/` read only these two
+- **Statistics recomputed from the exports.** Four scripts in `scripts/q1/` read only these two
   CSVs; they run no query and need no dbt. Run them from the repository root with Python 3.10+
-  (standard library only):
+  (standard library only, except `charts.py`, which needs matplotlib from `requirements.txt`):
 
   | Script | What it does | Run |
   |---|---|---|
   | `compare_with_rest.py` | Reproduces the comparison with the rest of the population: z-test per combination, Holm correction, 99 above / 11 below / 64 not distinguishable. Reads `q1_tag_combinations.csv` | `python scripts/q1/compare_with_rest.py results/q1_tag_combinations.csv` |
   | `derived_statistics.py` | Reproduces the derived figures: Wilson half-widths, the top/bottom separation and overlaps, the Spearman correlations (average ranks) and the Pearson correlation of the two steps, the 1,000 / 2,000 thresholds, rank moves with self-acceptance, combination coverage, the 200 vs 500 table and the 500+ lists. Prints labelled values to compare with the report; it is not a pass/fail check. Reads both CSVs | `python scripts/q1/derived_statistics.py` |
   | `check_doc.py` | Checks consistency, not statistics: every table row of this report whose first cell is a tag or a combination is compared with the CSVs (questions, percentages, Wilson intervals, counts, answers per question). Reads both CSVs and this file | `python scripts/q1/check_doc.py` |
+  | `charts.py` | Draws the four charts of this report into `docs/images/`. Reads both CSVs; the frequency-gradient counts are written in the code (table A) | `python scripts/q1/charts.py` |
 
 - **What the scripts do not cover.** The 2022 baseline, the population counts (1,121,356
   questions, 988,059 with 2+ tags, 583,276 distinct combinations), the threshold sweep and the

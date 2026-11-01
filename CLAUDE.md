@@ -132,7 +132,8 @@ Strict constraints and patterns to follow when modifying this codebase.
 
 ## Python & Data Engineering Guidelines
 - Scripts in `scripts/q<N>/` use the standard library only and read only the CSVs in `results/`;
-  they never query BigQuery.
+  they never query BigQuery. The one exception to the standard library is `charts.py`, which uses
+  matplotlib (pinned in `requirements.txt`) and writes PNGs to `docs/images/`.
 - Each script opens with a docstring: Purpose, Inputs, Assumptions (or Methods and assumptions), Run.
 - Rates are recomputed from the exact counts, never from a rounded rate.
 - CSV exports go through `scripts/export_results.py`, which reads finished tables with the BigQuery

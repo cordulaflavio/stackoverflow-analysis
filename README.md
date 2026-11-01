@@ -6,7 +6,7 @@ BigQuery) over the public dataset `bigquery-public-data.stackoverflow`, a static
 write-up against the exported CSVs.
 
 **Stack:** BigQuery Standard SQL, dbt-core 1.12, dbt-bigquery, dbt_utils, Python 3.11
-(standard library only for the analysis scripts).
+(standard library only for the analysis scripts; matplotlib for the charts).
 
 ## Answers at a glance
 
