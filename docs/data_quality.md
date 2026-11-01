@@ -114,7 +114,9 @@ questions are therefore kept.
 
 - `tags` is a `|`-separated string, never empty, with no empty, padded or uppercase segments.
 - Tags per question: 1 (2.7M), 2 (6.0M), 3 (6.6M), 4 (4.6M), 5 (3.1M), and **6 for 119 questions**,
-  although the site allows at most 5 (legacy data).
+  although the site allows at most 5. They are not only old rows: 106 of them were created between
+  2013 and 2022, none among the 2022 questions up to late August ([`queries/q3/01_attribute_distributions.sql`](../queries/q3/01_attribute_distributions.sql)).
+  The cause was not measured; Q3 groups them in the `5+` tag-count bucket.
 - Counts from splitting `tags` match the official `tags` table within 0.01% for the top tags
   (`python`: 2,026,601 vs 2,026,741) and exactly for `dbt` (674).
 
