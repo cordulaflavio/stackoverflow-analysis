@@ -248,5 +248,13 @@ both the fewer answers per question and the lower acceptance.
 - **Export.** `results/q2_python_dbt_by_year.csv` (20 rows: 2 tags × 10 years).
 - **Profiling.** `queries/profiling/10_python_dbt_volume.sql` gives the whole-year counts, the
   questions with `dbt` among other tags and the share of single-tag questions.
-- **Derived figures.** The margins of error, the pooled 2020–2022 rates and the gaps are computed
-  from the export.
+- **The `dbt` tag.** `queries/q2/01_dbt_like_tags.sql` lists every tag containing "dbt" with its
+  official excerpt.
+- **Derived figures.** Two scripts in `scripts/q2/` read only the export; they run no query and
+  need no dbt. Run them from the repository root with Python 3.10+ (standard library only):
+  - `derived_statistics.py` prints the derived figures: the margins of error, the python decline
+    and how many yearly changes exceed their margin, the dbt changes, answers per question, the
+    answered share, the pooled 2020–2022 rates and the gaps. It prints labelled values to compare
+    with this report; it is not a pass/fail check. Run `python scripts/q2/derived_statistics.py`.
+  - `check_doc.py` checks the three tables of this report against the export. Numbers quoted in
+    the running text are not checked by it. Run `python scripts/q2/check_doc.py`.
