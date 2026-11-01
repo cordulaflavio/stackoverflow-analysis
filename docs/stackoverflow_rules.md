@@ -13,7 +13,7 @@ Rules come from the Stack Overflow Help Center and official Meta discussions (li
 **Implications**
 
 - Tags are the *current* tags, not necessarily the ones used at posting time: editors can retag a question later, and tag synonyms are merged into a master tag. Q1 and Q2 group by tags as they stand in the dump.
-- 119 questions carry 6 tags (see [data_quality.md](data_quality.md)): legacy rows from before the limit was enforced.
+- 119 questions carry 6 tags, above the limit of 5 (see [data_quality.md](data_quality.md)). 106 of them were created between 2013 and 2022, so they are not only rows from before the limit; the cause was not measured.
 
 ## Accepting an answer
 

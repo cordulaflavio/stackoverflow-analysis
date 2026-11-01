@@ -18,9 +18,13 @@ bigquery-public-data.stackoverflow     (source, read-only)
         │         ▼
         │    results/q1_*.csv  →  docs/question_1.md
         │
-        └──► rpt_q2_python_dbt_by_year  (table)               models/reports/   Q2
+        ├──► rpt_q2_python_dbt_by_year  (table)               models/reports/   Q2
+        │         ▼
+        │    results/q2_python_dbt_by_year.csv  →  docs/question_2.md
+        │
+        └──► rpt_q3_post_qualities  (table)                   models/reports/   Q3
                   ▼
-             results/q2_python_dbt_by_year.csv  →  docs/question_2.md
+             results/q3_post_qualities.csv  →  docs/question_3.md
 ```
 
 Staging and the fact table are shared by every question. Each question has its own report
@@ -61,19 +65,21 @@ docs/             one write-up per question, plus data quality, Stack Overflow r
 
     These cases define the "valid acceptance" rule.
   - **94.7% of first answers arrive within 30 days.** This justifies the 30-day window.
-  - **Survivorship bias.** Unanswered questions with a score ≤ 0 are automatically deleted after
-    about one year, and deleted posts are not in the dump.
+  - **Survivorship bias.** After about one year, Stack Overflow automatically deletes some
+    unanswered questions that meet its cleanup criteria, a score of 0 or less among them (see
+    [stackoverflow_rules.md](stackoverflow_rules.md)). Deleted posts are not in the dump.
     - **Evidence:** among questions created after September 2021, which were not yet one year old,
-      the share of this group jumps from 12.5% to 26.6%. This is consistent with the Roomba
-      deletion rule.
-    - **Why 2022 helps:** using only 2022 questions avoids the one-year rule.
-    - **What remains:** shorter deletion rules still apply to 2022 questions:
-      - unanswered questions with a negative score are deleted after 30 days;
-      - closed questions (not as duplicates) with a score ≤ 0 and no positively scored or
-        accepted answer are deleted 9 days after closure.
+      the share of unanswered questions with a score ≤ 0 jumps from 12.5% to 26.6%. This is
+      consistent with the one-year deletion rule.
+    - **Why 2022 helps:** 2022 questions had not reached the one-year rule.
+    - **What remains:** shorter deletion rules can still remove 2022 questions:
+      - the 30-day rule can delete some unanswered questions with a negative score;
+      - the closed-question rule can delete some closed (not as duplicates), unanswered
+        questions 9 days after closure.
 
-      Both remove questions that failed, so the remaining data contains proportionally more
-      answered and accepted questions, and the rates look higher than they actually were.
+      Both remove questions that failed, so the remaining data can hold proportionally more
+      answered and accepted questions, and the rates can look higher than they were. The size of
+      this effect was not measured.
   - **`body` is 36 of the 40 GB of `posts_questions`.** It is read only once.
 
 ## 2. Staging: four models
@@ -116,6 +122,16 @@ The single source of truth for the three questions.
 **Columns added by Q2.** Q2 reuses the columns above and also filters on `creation_year`
 (2013 to 2022) and `tag_count` (exactly one tag), with `tag_combination` as the tag itself.
 
+**Columns added by Q3.** Attributes known at posting time; title and body are the latest version.
+
+| Column | Rule | Why |
+|---|---|---|
+| `title_length`, `title_has_question_mark` | length of the title; whether it contains `?` | title qualities |
+| `body_length`, `code_block_count`, `link_count`, `image_count`, `has_error_report` | from `stg_question_body_features` | body qualities, without reading `body` again |
+| `asker_account_age_days` | days from account creation to posting; null if the account looks newer than the question | the asker's experience at posting time, unlike the snapshot reputation |
+| `created_hour_utc`, `created_weekday` | from `created_at`, in UTC | posting time (not the asker's local time) |
+| `is_edited` | `last_edited_at` is not null | selects never-edited questions, whose text is the posted version |
+
 **Technical decisions**
 - **Clustered by `creation_year`, not partitioned**, and a **`pre_hook` that drops the table
   first**. Both come from the sandbox limits; the reasons are in [cost.md](cost.md).
@@ -137,6 +153,7 @@ All analytical choices live here. Each report reads `fct_questions` only.
 | Q1 | `rpt_q1_tags` | one row per tag |
 | Q1 | `rpt_q1_tag_combinations` | one row per exact tag combination |
 | Q2 | `rpt_q2_python_dbt_by_year` | one row per tag (python, dbt) and year |
+| Q3 | `rpt_q3_post_qualities` | one row per segment, year, attribute and bucket |
 
 ### Q1: `rpt_q1_tags` and `rpt_q1_tag_combinations`
 
@@ -167,7 +184,7 @@ All analytical choices live here. Each report reads `fct_questions` only.
 - **A tested identity:** community acceptance = answered rate × acceptance among answered
   questions. It splits the outcome into two steps: getting an answer, then getting a solution.
 
-**Tests (14, all passing):**
+**Tests (12, six per model, all passing):**
 - minimum volume;
 - rates between 0 and 1;
 - community acceptance ≤ total acceptance;
@@ -210,9 +227,47 @@ All analytical choices live here. Each report reads `fct_questions` only.
 - rates null exactly when the year has no questions;
 - `tag` in python / dbt, and not null keys.
 
+### Q3: `rpt_q3_post_qualities`
+
+| | |
+|---|---|
+| Population | 2013–2022 + `has_full_30d_window`; 2022 is exactly the Q1 population (1,121,356) |
+| Unit | one segment, creation year, attribute and bucket: 1,340 rows |
+| Partial year | 2022 covers January to about 2022-08-26 and is flagged by `is_partial_year` |
+
+**Steps (CTEs)**
+1. `questions`: filters the population.
+2. `question_segments`: each question once in `all`, and again in each robustness segment it
+   belongs to (`never_edited`, `python_only`).
+3. `question_buckets`: one row per question, segment and attribute, with its bucket. No `case`
+   has an `else`, so an unexpected value gets a null bucket and fails a test.
+4. `bucket_metrics`: counts per segment, year, attribute and bucket.
+5. `final`: rates rounded to 4 decimals, plus `is_partial_year`.
+
+**Analytical choices**
+- **Attributes known at posting time only:** 11 attributes (body length, code blocks, error
+  report, links, images, title length, question mark in the title, account age, tag count,
+  hour, weekday). Snapshot values (score, views, current reputation, `has_owner`) are left out.
+- **Fixed buckets for every year**, set on the 2013–2022 distribution
+  (`queries/q3/01_attribute_distributions.sql`), so years compare bucket by bucket.
+- **Segments:** `all` is the analysis. `never_edited` (text as posted) and `python_only` (as in
+  Q2) are robustness subsets, never mixed into it.
+- **Metrics:** the Q1 definitions; the main one is `community_accepted_rate`.
+- **Empty buckets have no row:** a missing row means no observations, not a rate of zero.
+
+**Tests (13, all passing):**
+- unique segment, year, attribute and bucket;
+- years between 2013 and 2022, and at least one question per row;
+- answered ≤ total and community accepted ≤ answered; rates between 0 and 1;
+- accepted values for `segment` and `attribute`, and not null keys;
+- `tests/assert_rpt_q3_buckets_reconcile.sql`: every attribute adds up to the same population,
+  `all` matches `fct_questions` and `python_only` matches the Q2 report.
+
 ## 5. Output: CSVs and the write-ups
 
 - **`results/`:** every report exported, identical to the tables: `q1_tags.csv`,
-  `q1_tag_combinations.csv` and `q2_python_dbt_by_year.csv`.
-- **`docs/question_1.md`** and **`docs/question_2.md`:** the complete analyses, written from
-  the CSVs.
+  `q1_tag_combinations.csv`, `q2_python_dbt_by_year.csv` and `q3_post_qualities.csv`.
+  `scripts/export_results.py` regenerates them for free (`list_rows`, no query).
+- **`docs/question_1.md`**, **`docs/question_2.md`** and **`docs/question_3.md`:** the complete
+  analyses, written from the CSVs. `scripts/q1/` and `scripts/q3/` recompute the derived
+  figures and check the tables of the write-ups against the CSVs.
