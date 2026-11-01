@@ -3,6 +3,19 @@
 > *Other than tags, what qualities on a post correlate with the highest rate of answer and
 > approved answer? Feel free to get creative.*
 
+**Answer (2022, January to late August; checked against 2013–2022):**
+- **Code in the body:** the strongest. Questions with at least one code block are answered
+  62–65% of the time and get a community-accepted answer 28–32% of the time, against 51.0% and
+  18.1% without code.
+- **Asker's account age:** accounts created the same day do worst (55.4% answered, 20.0%
+  accepted); accounts from one day to three years old do best (61–63% and 28–29%).
+- **Body length and error reports:** bodies of 500–1,999 characters do best (29–30% accepted),
+  4,000+ worst (23.1%); describing an error in prose goes with lower acceptance (22.9% vs 28.6%).
+- **Smaller (2–5 pp):** a shorter title, fewer tags, a question mark in the title, fewer links,
+  posting on a weekend. Images show no consistent association.
+- **Confidence:** high for code, account age, body length and error reports (same direction in
+  every year, among never-edited and among python-only questions); moderate to low for the rest.
+
 ## Executive summary
 
 - **Code is the quality most associated with success.** In 2022, questions with at least one
@@ -144,6 +157,8 @@ shown but left out of every comparison.
 | | Friday | 166,469 | 14.8% | 60.6% | 27.0% |
 | | Saturday | 101,193 | 9.0% | 63.5% | 29.4% |
 
+<img src="images/q3_main_attributes_2022.png" alt="2022 community acceptance by bucket for code blocks, account age, body length and error report, against the 27.2% baseline" width="680">
+
 **Which attributes separate most.** The gap between the best and the worst bucket of each
 attribute in community acceptance ("unknown" excluded):
 
@@ -162,6 +177,8 @@ attribute in community acceptance ("unknown" excluded):
 | Images | 1.6 pp | 2.4 pp |
 
 The answered rate ranks the attributes in nearly the same order.
+
+<img src="images/q3_attribute_gaps.png" alt="Gap between the best and the worst bucket of each attribute: code blocks 14.3 pp in 2022, down to images 1.6 pp, with the 2013 to 2022 pooled gap as a tick" width="640">
 
 **Facts**
 - **Code: the step is from none to some.** One code block lifts community acceptance from 18.1%
@@ -195,6 +212,8 @@ The same contrasts, year by year, in community acceptance (percentage points):
 | Question mark: yes vs no | 5.3 | 4.9 | 4.6 | 4.4 | 4.3 | 3.8 | 3.2 | 3.5 | 3.3 | 3.4 |
 | Images: 2+ vs none | −2.0 | −2.5 | −1.7 | −1.4 | −1.2 | −0.8 | 0.1 | −0.4 | 0.4 | 1.6 |
 | *Community acceptance, all questions* | *49.9%* | *46.8%* | *43.6%* | *41.7%* | *40.5%* | *39.4%* | *38.9%* | *38.6%* | *34.9%* | *27.2%* |
+
+<img src="images/q3_contrasts_by_year.png" alt="The six contrasts year by year from 2013 to 2022: code, account age, body length, error report and question mark stay positive every year; images change sign" width="720">
 
 **Facts**
 - **The code gap widened while acceptance fell.** It grew from 10.3 to 13.5 pp as overall
@@ -307,6 +326,8 @@ Two subsets of the population, never mixed into it and not representative of it:
   - `check_doc.py` checks every table of this report against the export: the 2022 buckets, the
     attribute gaps, the historical series and the robustness table. Numbers quoted in the running
     text are not checked by it. Run `python scripts/q3/check_doc.py`.
+- **Charts.** `scripts/q3/charts.py` draws the three charts of this report into `docs/images/`
+  from the export. It needs matplotlib (`requirements.txt`). Run `python scripts/q3/charts.py`.
 - **What the scripts do not cover.** The bucket limits come from the SQL in
   `queries/q3/01_attribute_distributions.sql`, and the counts themselves from the model; both read
   the project's BigQuery tables.

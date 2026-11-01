@@ -54,17 +54,25 @@ write-up against the exported CSVs.
 
 [Full write-up](docs/question_2.md) · [CSV](results/q2_python_dbt_by_year.csv)
 
-### Q3. Which post qualities, other than tags, go with answers and acceptance?
-[Full write-up](docs/question_3.md) · [CSV](results/q3_post_qualities.csv)
+### Q3. Post qualities
 
-- **Code** is the strongest: in 2022, questions with a code block get a community-accepted answer
-  28–32% of the time, against 18.1% without code.
-- **Same-day accounts** do worse (20.0% against 28–29%), **medium-length bodies** do best, and
-  **error reports written in prose** go with lower acceptance.
-- Title length, tag count, a question mark, links and timing show smaller gaps (2–5 pp); images
-  show none.
-- **Confidence:** high for code, account age, body length and error reports, which hold in every
-  year, among never-edited questions and among python-only questions.
+> *Other than tags, what qualities on a post correlate with the highest rate of answer and
+> approved answer? Feel free to get creative.*
+
+**Answer (2022, January to late August; checked against 2013–2022):**
+- **Code in the body:** the strongest. Questions with at least one code block are answered
+  62–65% of the time and get a community-accepted answer 28–32% of the time, against 51.0% and
+  18.1% without code.
+- **Asker's account age:** accounts created the same day do worst (55.4% answered, 20.0%
+  accepted); accounts from one day to three years old do best (61–63% and 28–29%).
+- **Body length and error reports:** bodies of 500–1,999 characters do best (29–30% accepted),
+  4,000+ worst (23.1%); describing an error in prose goes with lower acceptance (22.9% vs 28.6%).
+- **Smaller (2–5 pp):** a shorter title, fewer tags, a question mark in the title, fewer links,
+  posting on a weekend. Images show no consistent association.
+- **Confidence:** high for code, account age, body length and error reports (same direction in
+  every year, among never-edited and among python-only questions); moderate to low for the rest.
+
+[Full write-up](docs/question_3.md) · [CSV](results/q3_post_qualities.csv)
 
 All results are **associations**: the data cannot show that a tag or a post quality causes an
 answer.
