@@ -29,6 +29,8 @@ write-up against the exported CSVs.
 - **Confidence:** high for the gap between top and bottom groups; the order inside each group
   is not statistically established.
 
+<img src="docs/images/q1_tag_extremes.png" alt="The ten highest and ten lowest tags by community acceptance, with 95% Wilson intervals and the 2022 baseline" width="480">
+
 [Full write-up](docs/question_1.md) · [tags CSV](results/q1_tags.csv) ·
 [combinations CSV](results/q1_tag_combinations.csv)
 
@@ -52,6 +54,8 @@ write-up against the exported CSVs.
 - **Confidence:** high for the python decline; moderate for the python vs dbt gap (157 dbt
   questions); none for a dbt trend.
 
+<img src="docs/images/q2_acceptance_by_year.png" alt="Community acceptance per year with 95% margins: python-only from 63.9% in 2013 to 35.8% in 2022 with a narrow band; dbt-only 25.8%, 19.0% and 22.1% with wide error bars" width="480">
+
 [Full write-up](docs/question_2.md) · [CSV](results/q2_python_dbt_by_year.csv)
 
 ### Q3. Post qualities
@@ -71,6 +75,8 @@ write-up against the exported CSVs.
   posting on a weekend. Images show no consistent association.
 - **Confidence:** high for code, account age, body length and error reports (same direction in
   every year, among never-edited and among python-only questions); moderate to low for the rest.
+
+<img src="docs/images/q3_main_attributes_2022.png" alt="2022 community acceptance by bucket for code blocks, account age, body length and error report, against the 27.2% baseline" width="520">
 
 [Full write-up](docs/question_3.md) · [CSV](results/q3_post_qualities.csv)
 
@@ -197,4 +203,12 @@ flowchart LR
 - Badges earned before the question, as a point-in-time measure of asker experience.
 - A tag-pair view for Q1, which covers more questions than exact combinations.
 - An exact test (Fisher) for the small dbt samples in Q2.
+- A simulation of the one-year Roomba rule on 2022 and late-2021 questions (no answer, score
+  ≤ 0, at most one comment, views ≤ 1.5 × age in days), to measure how much survivorship
+  inflates the 2022 drop instead of only stating it.
+- A multivariate model for Q3 (logistic regression, possible in BigQuery ML): the attributes are
+  compared one at a time, and some move together, such as code and body length.
+- Time to first answer and to the accepted answer as a survival analysis, instead of a fixed
+  30-day window. The dump has no acceptance date, so the accepted answer's posting date would
+  stand in for it, as it does now.
 - CI running `dbt parse` and the `check_doc.py` scripts on every pull request.
