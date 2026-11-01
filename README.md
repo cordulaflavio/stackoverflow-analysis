@@ -10,21 +10,27 @@ write-up against the exported CSVs.
 
 ## Answers at a glance
 
-### Q1. Which tags get the most answers and the highest acceptance in the current year?
+### Q1. Tags
+
+> *What tags on a Stack Overflow question lead to the most answers and the highest rate of
+> approved answers for the current year? What tags lead to the least? How about combinations
+> of tags?*
+
+**Answer (2022, January to late August):**
+- **Most:** text and data manipulation tags. awk and sed get the most answers per question
+  (2.44 and 2.18, against 0.80 overall); awk, jq, data.table and dplyr the highest acceptance
+  (64–67% get a community-accepted answer, against 27%). In total answers python, javascript
+  and reactjs lead, only because they are the largest tags.
+- **Least:** platform and tooling tags. facebook gets the fewest answers per question (0.28);
+  appium, cordova and facebook the lowest acceptance (6.5–6.8%).
+- **Combinations:** javascript|regex, dplyr|r and python|regex lead (64–66%);
+  android|react-native (7.5%) and woocommerce|wordpress (10.4%) trail. The more common a
+  question's exact tag set, the higher its acceptance (40% vs 22%).
+- **Confidence:** high for the gap between top and bottom groups; the order inside each group
+  is not statistically established.
+
 [Full write-up](docs/question_1.md) · [tags CSV](results/q1_tags.csv) ·
 [combinations CSV](results/q1_tag_combinations.csv)
-
-- **Top:** tags about well-scoped data and text manipulation (awk, jq, data.table, dplyr, sed,
-  regex) get a community-accepted answer for 59–67% of their questions, against a 2022
-  baseline of 27%.
-- **Bottom:** tags about platforms, tooling and setup (appium, cordova, facebook, aws-amplify,
-  webpack) get one for 6.5–8.5%.
-- **Most total answers** go to the largest tags (python, javascript, reactjs): a size effect, not
-  a higher rate.
-- **Combinations** repeat the split, and the more common a question's exact tag set, the higher
-  its acceptance (40% for sets used by 200+ questions, 22% for unique sets).
-- **Confidence:** high for the separation between top and bottom groups; the order inside each
-  group is not statistically established.
 
 ### Q2. python-only vs dbt-only, year over year, 2013–2022
 [Full write-up](docs/question_2.md) · [CSV](results/q2_python_dbt_by_year.csv)
