@@ -6,6 +6,8 @@
 -- 30 days, so a question from January has no advantage over one from August.
 -- A question counts once for each of its tags: a 'pandas|python' question is in both rows.
 -- The metric definitions are the same as in rpt_q1_tag_combinations.
+
+-- The 2022 population: questions with a complete 30-day window, one row each.
 with questions as (
     select
         question_id,
@@ -20,6 +22,7 @@ with questions as (
         and has_full_30d_window
 ),
 
+-- One row per question and tag, so a question counts once in each of its tags.
 question_tags as (
     select
         tag,
@@ -33,6 +36,7 @@ question_tags as (
     cross join unnest(questions.tags) as tag
 ),
 
+-- Counts and rates per tag; tags under 500 questions are dropped (see having).
 tag_metrics as (
     select
         tag,
@@ -65,6 +69,7 @@ tag_metrics as (
     having count(*) >= 500
 ),
 
+-- Ranks on the unrounded rates (rounding happens in final).
 ranked as (
     select
         tag,
@@ -86,9 +91,9 @@ ranked as (
     from tag_metrics
 ),
 
+-- Rounded only after ranking, so rounding cannot create artificial ties. Four decimals are
+-- far finer than the margin of error, and every rate can be recomputed from the counts.
 final as (
-    -- Rounded only after ranking, so rounding cannot create artificial ties. Four decimals are
-    -- far finer than the margin of error, and every rate can be recomputed from the counts.
     select
         tag,
         total_questions,
