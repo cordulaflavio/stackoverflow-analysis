@@ -1,6 +1,7 @@
 -- Format of posts_questions.tags, a '|'-separated string (e.g. 'python|pandas|numpy').
 -- Distribution of tags per question, plus malformed segments (empty, padded or uppercase)
 -- that would break an exact match such as tags = 'python'.
+-- Estimated scan (dry-run): 0.63 GB.
 with tag_lists as (
     select split(tags, '|') as tag_array
     from `bigquery-public-data.stackoverflow.posts_questions`

@@ -12,7 +12,7 @@
 --   kind = 'value':      questions and share for each value of the discrete attributes and flags.
 --                        Nulls are reported as the value 'null', never dropped.
 --   kind = 'domain':     questions outside the expected domain of hour (0-23), weekday (1-7)
---                        and tag count (1-5; the site allows at most 5 tags, so the 119 legacy
+--                        and tag count (1-5; the site allows at most 5 tags, so the 119
 --                        questions with 6 are expected to show here). Nulls count as outside.
 with questions as (
     select

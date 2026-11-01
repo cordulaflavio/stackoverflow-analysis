@@ -1,6 +1,7 @@
 -- Is accepted_answer_id trustworthy?
 -- Checks that the accepted answer exists, belongs to the same question and was posted
 -- after it, and measures self-accepted answers (asker answered and accepted their own question).
+-- Estimated scan (dry-run): 1.73 GB.
 with questions as (
     select
         id as question_id,

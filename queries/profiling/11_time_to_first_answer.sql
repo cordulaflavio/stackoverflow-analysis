@@ -2,6 +2,7 @@
 -- If almost all first answers arrive within days, a fixed observation window
 -- (e.g. "answered within 30 days") makes recent questions comparable with old ones,
 -- neutralising right-censoring at the end of the dump.
+-- Estimated scan (dry-run): 0.91 GB.
 with first_answers as (
     select
         parent_id as question_id,

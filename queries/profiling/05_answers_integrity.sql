@@ -1,5 +1,6 @@
 -- posts_answers: coverage window, id uniqueness and orphans
 -- (answers whose parent question is not in posts_questions).
+-- Estimated scan (dry-run): 1.00 GB.
 with answers as (
     select
         id as answer_id,
