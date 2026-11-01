@@ -8,7 +8,7 @@
 - **Most:** text and data manipulation tags. awk and sed get the most answers per question
   (2.44 and 2.18, against 0.80 overall); awk, jq, data.table and dplyr the highest acceptance
   (64–67% get a community-accepted answer, against 27%). In total answers python, javascript
-  and reactjs lead, only because they are the largest tags.
+  and reactjs lead, mostly because they are the largest tags.
 - **Least:** platform and tooling tags. facebook gets the fewest answers per question (0.28);
   appium, cordova and facebook the lowest acceptance (6.5–6.8%).
 - **Combinations:** javascript|regex, dplyr|r and python|regex lead (64–66%);

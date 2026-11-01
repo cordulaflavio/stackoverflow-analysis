@@ -11,7 +11,7 @@
   adds +16.7% (0.78). dbt-only exists only from 2020: 0.89, then +23.6% and −2.9%.
 - **Approved answers:** python-only community acceptance fell from 63.9% to 41.5% (2013–2021,
   about −2.8 pp a year), and 6 of the 8 yearly drops exceed their margin of error; 2022 adds
-  −5.7 pp, probably overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
+  −5.7 pp, possibly overstated. dbt-only changed −6.8 pp and +3.1 pp, both within a margin of
   about ±14–18 pp: no dbt trend can be stated.
 - **python vs dbt:** dbt-only questions get fewer answers (ratio 0.89–1.09 vs 0.62–0.78 in
   2020–2022) and about half the acceptance (21.7% vs 41.0% pooled, a gap of 19.3 ± 6.5 pp).
