@@ -87,8 +87,8 @@ Neither is the number of answered questions. A question with five answers adds f
 `total_answers` and one to `answered_questions`.
 
 **Valid acceptance.** An acceptance counts only if the accepted answer exists, belongs to the
-question and was posted after it. Profiling found 332 accepted-answer ids that fail these
-checks, out of 11.8M accepted questions.
+question and was posted after it. Profiling found 331 questions whose accepted answer fails these
+checks (332 failed checks: one question fails two), out of 11.8M accepted questions.
 
 **Why community acceptance is the main rate.** A self-accepted answer means the asker wrote the
 answer they accepted. The community may still have helped, for example through comments or other

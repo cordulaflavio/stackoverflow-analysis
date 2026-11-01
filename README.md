@@ -106,7 +106,7 @@ shape the data are in [stackoverflow_rules.md](docs/stackoverflow_rules.md).
 - **Small dbt sample.** 31–68 dbt-only questions per year.
 - **Current state only.** Tags, title and body are the latest version; never-edited questions are
   used as a robustness check.
-- **Data errors are small.** 332 broken accepted answers out of 11.8M; `answer_count` matches the
+- **Data errors are small.** 331 questions with a broken accepted answer out of 11.8M; `answer_count` matches the
   answers table for every question.
 
 ## How it is built

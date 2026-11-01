@@ -88,7 +88,7 @@ models:
           A valid accepted answer: it exists, answers this question and was posted after it.
           Includes self-accepted answers (see is_self_accepted).
       - name: has_invalid_accepted_answer
-        description: accepted_answer_id is set but fails the validity checks (332 in profiling).
+        description: accepted_answer_id is set but fails the validity checks (331 questions in profiling).
       - name: accepted_answer_created_at
         description: Creation timestamp of the valid accepted answer.
       - name: is_self_accepted

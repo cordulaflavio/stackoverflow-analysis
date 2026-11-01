@@ -45,7 +45,7 @@ models:
                 # Expected: 230 rows. Accepted answers absent from posts_answers, most likely
                 # deleted after being accepted. Not caught here: 62 accepted answers that belong
                 # to another question and 40 created before their question (see data_quality.md).
-                # 332 of 11.8M accepted answers in total: negligible for the rates.
+                # 331 of 11.8M accepted answers in total (332 failed checks; one question fails two): negligible for the rates.
                 severity: warn
       - name: answer_count
         description: Number of answers; matches the rows in posts_answers for every question.

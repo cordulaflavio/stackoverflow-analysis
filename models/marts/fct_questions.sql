@@ -86,7 +86,7 @@ questions_enriched as (
         askers.reputation as asker_reputation,
         askers.created_at as asker_created_at,
         -- An acceptance is valid only if the accepted answer exists, answers this question and
-        -- was posted after it. Profiling found 332 that fail (230 / 62 / 40).
+        -- was posted after it. Profiling found 331 questions that fail (230 / 62 / 40 failed checks; one question fails two).
         accepted_answers.answer_id is not null
             and accepted_answers.question_id = questions.question_id
             and accepted_answers.created_at >= questions.created_at

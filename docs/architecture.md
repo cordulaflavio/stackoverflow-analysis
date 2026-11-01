@@ -8,7 +8,7 @@ How data flows from the public source to the answers, and why each layer exists.
 bigquery-public-data.stackoverflow     (source, read-only)
         │
         ▼  0. Ingestion: none (read in place)
-        ▼  1. Profiling: queries/profiling/01–13 → docs/data_quality.md
+        ▼  1. Profiling: queries/profiling/01–14 → docs/data_quality.md
         ▼
   stg_*  (views; body features: table)  models/staging/        shared
         ▼
@@ -55,10 +55,10 @@ docs/             one write-up per question, plus data quality, Stack Overflow r
 
 ## 1. Profiling and Exploratory Data Analysis (EDA), before modeling
 
-- **What:** 13 queries in `queries/profiling/`, with the findings in `docs/data_quality.md`.
+- **What:** 14 queries in `queries/profiling/`, with the findings in `docs/data_quality.md`.
 - **Findings that became decisions:**
   - **The data ends on 2022-09-25**, so 2022 is a partial year.
-  - **332 invalid acceptances:**
+  - **331 questions with an invalid acceptance** (332 failed checks; one question fails two):
     - 230 point to an answer that does not exist;
     - 62 point to an answer of another question;
     - 40 point to an answer posted before the question.
@@ -114,7 +114,7 @@ The single source of truth for the three questions.
 | `tag_combination` | tags **sorted** alphabetically | the source order is not alphabetical and can vary, so python\|pandas and pandas\|python must become the same combination |
 | `answers_within_30d` | answers posted within 30 days | `answer_count` favours older questions, which had more time |
 | `is_answered_within_30d` | first answer within 30 days | the same window for every question |
-| `has_accepted_answer` | the accepted answer exists, belongs to this question and was posted after it | excludes the 332 invalid acceptances |
+| `has_accepted_answer` | the accepted answer exists, belongs to this question and was posted after it | excludes the 331 invalid acceptances |
 | `is_self_accepted` | the accepted answer's owner is the asker | separates community help from self-help |
 | `is_accepted_within_30d` | a valid acceptance of an answer posted within 30 days | the dump has no acceptance date; the answer date is the proxy |
 | `has_full_30d_window` | posting date + 30 days falls before the end of the dump | right-censoring |

@@ -11,7 +11,7 @@ or, where noted, from a dbt test; each profiling query runs as-is in the BigQuer
 | Coverage | Questions and answers end on **2022-09-25** | 2022 is a partial year |
 | Survivorship | Some unanswered, low-score questions older than ~1 year are missing (auto-deleted when they meet Stack Overflow's cleanup criteria) | Rates of questions older and younger than ~1 year are **comparable only with caveats**: the younger ones still include future deletions; the size of the bias was not measured |
 | Consistency | `answer_count` matches `posts_answers` for 100% of questions; no orphans, no duplicate ids | `answer_count` can be used directly |
-| Accepted answers | 332 of 11.8M accepted answers are broken; 11.4% are self-accepted | Negligible errors; self-acceptance is a definition choice |
+| Accepted answers | 331 of 11.8M accepted answers are broken (332 failed checks; one question fails two); 11.4% are self-accepted | Negligible errors; self-acceptance is a definition choice |
 | Tags | `\|`-separated string, clean; parsing matches the official `tags` table within 0.01% | Exact matches such as `tags = 'python'` are safe |
 | dbt sample | Questions tagged only `dbt`: none before 2020, then 31 / 58 / 79 per year | Q2 for dbt rests on very small samples |
 | Answer timing | Median time to first answer is 34 minutes; 94.7% of first answers arrive within 30 days | A 30-day window loses little and handles right-censoring |
@@ -74,7 +74,8 @@ measured.
 [`04_answer_count_consistency.sql`](../queries/profiling/04_answer_count_consistency.sql),
 [`05_answers_integrity.sql`](../queries/profiling/05_answers_integrity.sql),
 [`06_accepted_answer_integrity.sql`](../queries/profiling/06_accepted_answer_integrity.sql),
-[`07_question_owners.sql`](../queries/profiling/07_question_owners.sql)
+[`07_question_owners.sql`](../queries/profiling/07_question_owners.sql),
+[`14_invalid_acceptance_overlap.sql`](../queries/profiling/14_invalid_acceptance_overlap.sql)
 
 | Check | Result |
 |---|---|
@@ -84,6 +85,7 @@ measured.
 | Accepted answer missing from `posts_answers` | 230 |
 | Accepted answer belongs to another question | 62 |
 | Accepted answer created before its question | 40 |
+| Questions with an invalid acceptance, counted once | 331 ³ |
 | Answers created before their question | 507 ² |
 | Questions without owner (deleted account) | 457,862 (2.0%) |
 | Owner id not found in `users` (questions) | 5 |
@@ -99,6 +101,10 @@ within 30 days. An accepted answer created before its question, by contrast, mak
 invalid. The asymmetry was left in place: 507 answers are negligible in a dump of tens of millions,
 and aligning the rules would mean rebuilding `fct_questions`. How many fall in each reported tag or
 year was not measured.
+
+³ The three checks above add up to 332, but one question (id 3896786) fails two: its accepted
+answer belongs to another question and was posted before it. `fct_questions.has_invalid_accepted_answer`
+counts questions, so it holds 331.
 
 **A hypothesis that did not hold.** Only the asker can accept an answer, so questions whose owner deleted
 their account were expected to show a lower accepted-answer rate. They show a *higher* one
