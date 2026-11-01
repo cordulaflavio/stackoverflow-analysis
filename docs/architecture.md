@@ -269,5 +269,5 @@ All analytical choices live here. Each report reads `fct_questions` only.
   `q1_tag_combinations.csv`, `q2_python_dbt_by_year.csv` and `q3_post_qualities.csv`.
   `scripts/export_results.py` regenerates them for free (`list_rows`, no query).
 - **`docs/question_1.md`**, **`docs/question_2.md`** and **`docs/question_3.md`:** the complete
-  analyses, written from the CSVs. `scripts/q1/` and `scripts/q3/` recompute the derived
+  analyses, written from the CSVs. `scripts/q1/`, `scripts/q2/` and `scripts/q3/` recompute the derived
   figures and check the tables of the write-ups against the CSVs.

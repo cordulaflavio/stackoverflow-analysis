@@ -3,13 +3,14 @@
 How to reproduce the analysis. There are two levels:
 
 - **No setup:** every answer is in `results/` (CSV) and `docs/question_N.md`. The model SQL is in
-  `models/`, and the scripts in `scripts/q1/` and `scripts/q3/` need only Python and the CSVs.
+  `models/`, and the scripts in `scripts/q1/`, `scripts/q2/` and `scripts/q3/` need only Python
+  and the CSVs.
 - **Full rebuild:** dbt builds every table from the public dataset into your own BigQuery
   project. The steps below.
 
 ## Prerequisites
 
-- **Python 3.11** (the scripts in `scripts/q1/` and `scripts/q3/` also run on 3.10+).
+- **Python 3.11** (the scripts in `scripts/q1/`, `scripts/q2/` and `scripts/q3/` also run on 3.10+).
 - **A GCP project with BigQuery.** A sandbox project, with no billing account, is enough: the
   full rebuild fits in the free quota ([cost.md](cost.md)).
 - **A service account** in that project with the roles BigQuery Job User and BigQuery Data
@@ -71,6 +72,7 @@ After that, run the two builds again.
 ```
 python scripts/export_results.py    # rewrites results/*.csv from the report tables (no query billed)
 python scripts/q1/check_doc.py      # checks the tables of docs/question_1.md against the CSVs
+python scripts/q2/check_doc.py      # same for docs/question_2.md
 python scripts/q3/check_doc.py      # same for docs/question_3.md
 ```
 
