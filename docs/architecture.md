@@ -1,4 +1,4 @@
-# Project structure
+# Architecture
 
 How data flows from the public source to the answers, and why each layer exists.
 
@@ -25,6 +25,19 @@ bigquery-public-data.stackoverflow     (source, read-only)
 
 Staging and the fact table are shared by every question. Each question has its own report
 models, CSV exports and write-up; the reports read only `fct_questions`, never each other.
+
+## Repository layout
+
+```
+models/staging/   stg_* views, plus the body features table
+models/marts/     fct_questions
+models/reports/   rpt_q<N>_*: the tables that answer question N
+tests/            singular data quality and consistency tests
+queries/          profiling/, exploration/ and q<N>/: the SQL behind each finding
+scripts/q<N>/     Python checks and derived statistics, read from results/
+results/          CSV exports of the report tables
+docs/             one write-up per question, plus data quality, Stack Overflow rules, cost and this page
+```
 
 ## 0. Ingestion: none
 
@@ -104,22 +117,8 @@ The single source of truth for the three questions.
 (2013 to 2022) and `tag_count` (exactly one tag), with `tag_combination` as the tag itself.
 
 **Technical decisions**
-- **Clustered by `creation_year`, not partitioned.**
-  - **What clustering does:** a filter on `creation_year` lets BigQuery skip the blocks of other
-    years. The 2022 report `rpt_q1_tags` is billed about 0.07 GB (72 MB in the dbt run results).
-  - **Why not partitioning:**
-    - **Size.** The table is 5.5 GB, about 0.4 GB per year on average. BigQuery suggests
-      clustering instead of partitioning when partitions would hold less than approximately
-      10 GB. This is a guideline, not a hard limit.
-    - **Sandbox.** All tables and partitions expire after 60 days, counted from the partition
-      boundary. A table partitioned by question date would expire every partition from 2008 to
-      2022 immediately.
-  - **Integer-range partitioning** on `creation_year` has no partition expiration, but it brings
-    no benefit over clustering at this size.
-  - **The table itself still expires.** Every dataset has a 60-day default table expiration, so
-    the table expires 60 days after each build. The current build expires on 2026-12-28.
-- **`pre_hook` that drops the table first.** During a rebuild the old and new tables coexist,
-  which exceeds the 10 GB sandbox storage.
+- **Clustered by `creation_year`, not partitioned**, and a **`pre_hook` that drops the table
+  first**. Both come from the sandbox limits; the reasons are in [cost.md](cost.md).
 - **One wide table, no dimensions.** This is an analysis, not a data warehouse.
 - **Tests:**
   - `question_id` unique and not null;
