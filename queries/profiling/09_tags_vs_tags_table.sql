@@ -1,5 +1,6 @@
 -- Cross-check the tag parsing: questions per tag counted by splitting posts_questions.tags
 -- versus the official count in the tags table. Top 15 tags plus 'dbt'.
+-- Estimated scan (dry-run): 0.63 GB.
 with parsed as (
     select
         tag_name,

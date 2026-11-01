@@ -1,5 +1,6 @@
 -- Completeness and uniqueness of the posts_questions columns the analysis may rely on.
 -- `title` and `body` are left out on purpose: together they cost ~37 GB to scan.
+-- Estimated scan (dry-run): 2.15 GB.
 with questions as (
     select
         id,

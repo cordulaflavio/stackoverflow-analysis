@@ -1,6 +1,7 @@
 -- Does posts_questions.answer_count match the answers actually present in posts_answers?
 -- A mismatch means the denormalized counter and the answers table disagree (e.g. deleted
 -- answers), which decides which source the "answers per question" metric should use.
+-- Estimated scan (dry-run): 0.64 GB.
 with answers_per_question as (
     select
         parent_id as question_id,

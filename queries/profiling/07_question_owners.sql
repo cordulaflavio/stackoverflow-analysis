@@ -3,6 +3,7 @@
 -- (deleted account) should show a lower accepted-answer rate. The data refuted it: they show a
 -- higher one, since acceptances made before the account was deleted are kept (see
 -- docs/data_quality.md).
+-- Estimated scan (dry-run): 0.76 GB.
 with questions as (
     select
         owner_user_id,

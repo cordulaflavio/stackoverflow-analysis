@@ -1,6 +1,7 @@
 -- Q2 sample size: questions tagged ONLY 'python' or ONLY 'dbt' (the whole tags string is
 -- that single tag) per year, next to all questions carrying the tag, to show how much the
 -- "only" filter shrinks each sample and how much data backs each year-over-year change.
+-- Estimated scan (dry-run): 0.82 GB.
 with questions as (
     select
         extract(year from creation_date) as creation_year,

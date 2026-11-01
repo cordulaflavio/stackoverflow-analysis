@@ -1,6 +1,7 @@
 -- Question volume and raw outcome rates per year.
 -- Shows the coverage window (first and last question) and whether any year is partial,
 -- which decides what "current year" (Q1) and "last 10 years" (Q2) can mean.
+-- Estimated scan (dry-run): 0.46 GB.
 with questions as (
     select
         extract(year from creation_date) as creation_year,

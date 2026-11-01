@@ -5,6 +5,7 @@
 -- about one year before the end of the dump (2022-09-25):
 --   1. a step down in share_answered, and
 --   2. a jump in the share of unanswered questions with score <= 0 (the deletion candidates).
+-- Estimated scan (dry-run): 0.55 GB.
 with questions as (
     select
         date_trunc(date(creation_date), month) as creation_month,

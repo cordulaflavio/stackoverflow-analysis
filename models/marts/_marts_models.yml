@@ -43,7 +43,7 @@ models:
         data_tests:
           - not_null
       - name: tag_count
-        description: Number of tags (1 to 5; 6 for 119 legacy questions).
+        description: Number of tags (1 to 5; 6 for 119 questions, above the site limit; cause not measured).
       - name: title_length
         description: Characters in the latest title.
       - name: title_has_question_mark
